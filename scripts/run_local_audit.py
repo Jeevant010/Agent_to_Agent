@@ -1,17 +1,4 @@
 #!/usr/bin/env python3
-"""
-scripts/run_local_audit.py
-
-Complete End-to-End Local Demonstration of the Adversarial Verifier Audit.
-Runs 100% locally on any machine without Docker or GPU requirements.
-
-Demonstrates:
-  1. Base Reference Function (Gold Solution)
-  2. Initial Incomplete Verifier (Typical Benchmark Test Suite)
-  3. AST Semantic Mutation Injection
-  4. Deterministic Test Execution & Surviving Mutant Detection
-  5. Verifier Hardening (Closing the Loop)
-"""
 
 import sys
 import tempfile
@@ -98,9 +85,9 @@ def main():
     console.print("\n[bold yellow]Step 1: Baseline Verification[/bold yellow]")
     baseline_pass = execute_test(GOLD_CODE, WEAK_TEST_SUITE)
     if baseline_pass:
-        console.print("[green]✓ Baseline Test Suite PASSES on Reference Solution (Green Baseline).[/green]")
+        console.print("[green] Baseline Test Suite PASSES on Reference Solution (Green Baseline).[/green]")
     else:
-        console.print("[red]✗ Baseline failed on reference code. Aborting.[/red]")
+        console.print("[red] Baseline failed on reference code. Aborting.[/red]")
         sys.exit(1)
 
     # Step 2: AST Mutation
@@ -123,12 +110,12 @@ def main():
         if passed:
             # Mutant survived! The test didn't catch the bug.
             status_text = "[bold green]PASS (0)[/bold green]"
-            finding_text = "[bold red]🚨 SURVIVED (Weak Verifier)[/bold red]"
+            finding_text = "[bold red] SURVIVED (Weak Verifier)[/bold red]"
             surviving_mutants.append((idx, m))
         else:
             # Mutant killed! The test did its job.
             status_text = "[bold red]FAIL (1)[/bold red]"
-            finding_text = "[green]✓ KILLED (Caught by Test)[/green]"
+            finding_text = "[green] KILLED (Caught by Test)[/green]"
 
         table.add_row(str(idx), m["type"], m["description"], status_text, finding_text)
 
@@ -165,8 +152,8 @@ def main():
 
         hardened_smr = ((len(surviving_mutants) - now_killed) / len(mutants)) * 100
         console.print(Panel(
-            f"[green]✓ Soundness Verified:[/green] Hardened test suite PASSES on original reference code: {gold_still_passes}\n"
-            f"[green]✓ Loophole Closed:[/green] Killed {now_killed}/{len(surviving_mutants)} previously surviving mutants!\n"
+            f"[green] Soundness Verified:[/green] Hardened test suite PASSES on original reference code: {gold_still_passes}\n"
+            f"[green] Loophole Closed:[/green] Killed {now_killed}/{len(surviving_mutants)} previously surviving mutants!\n"
             f"[bold green]New Hardened Surviving Mutant Rate:[/bold green] [bold]{hardened_smr:.1f}%[/bold] (Dropped from {smr:.1f}%)\n"
             f"[bold cyan]Result:[/bold cyan] Zero human grading required — verifiable RL signal established.",
             title="[bold green]Verifier Hardening Success[/bold green]",

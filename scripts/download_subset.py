@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""
-scripts/download_subset.py
-
-Downloads a lightweight curated subset of SWE-bench tasks (e.g., 5-10 tasks)
-from Hugging Face and saves them to local JSON without pulling gigabytes of Docker images.
-"""
 
 import os
 import sys

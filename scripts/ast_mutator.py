@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-scripts/ast_mutator.py
-
-Autonomous AST-guided mutation engine.
-Parses Python code and systematically generates semantic mutants:
-  - Comparison operator inversion (== -> !=, < -> <=)
-  - Boolean literal inversion (True -> False)
-  - Boundary shift & Constant perturbation (x > max_age -> x >= max_age + 1)
-  - Return nullification (return payload -> return None)
-"""
 
 import ast
 import copy
