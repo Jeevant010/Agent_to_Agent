@@ -51,11 +51,16 @@ If you see the colored table showing **"MUTANT SURVIVED (Weak Verifier Found)"**
 ---
 
 ### 🎯 Weekend 3: Verifier Hardening (Closing the Loop)
-- **Goal:** Feed the working code + surviving mutant to an LLM (via local Ollama or API) and produce a new `pytest` function that kills the mutant.
+- **Goal:** Feed the working code + surviving mutant to our autonomous verifier synthesizer (`scripts/verifier_synthesizer.py`) using local Ollama or an API key to produce a new `pytest` function that kills the mutant.
 - **Action:**
-  1. Test the new assertion against the original patch: must output `PASS`.
-  2. Test the new assertion against the mutant: must output `FAIL`.
-- **Deliverable:** Record your first hardened test file!
+  1. Run:
+     ```bash
+     python3 scripts/verifier_synthesizer.py
+     ```
+  2. The script executes the **Bi-Directional Validation Gate**:
+     - Tests the assertion against the original reference patch: must output `PASS`.
+     - Tests the assertion against the mutant: must output `FAIL`.
+- **Deliverable:** Record your first autonomously hardened test assertion!
 
 ---
 
@@ -65,7 +70,7 @@ If you see the colored table showing **"MUTANT SURVIVED (Weak Verifier Found)"**
 | :--- | :--- | :--- |
 | **Lead / Systems** | Execution Pipeline & Harness | Maintain the runner scripts, Docker environments for Stage 2, and logging infrastructure. |
 | **Teammate A** | AST Mutation & Parsing | Expand mutation operators (boundary conditions, state leakage, error suppression) using Python `ast` and `tree-sitter`. |
-| **Teammate B** | Test Synthesis & LLM Prompting | Refine prompts for generating strict `pytest` assertions; test prompt strategies on local Ollama / Open-weights models. |
+| **Teammate B** | Test Synthesis & LLM Prompting | Refine prompts for generating strict `pytest` assertions; test prompt strategies on local Ollama / Open-weights models; design future algorithmic BVA (Boundary Value Analysis) rules for boundary mutations. |
 | **Teammate C** | Evaluation & Paper Results | Track baseline mutation kill rates, maintain the results spreadsheet, and prepare tables for the paper draft. |
 
 ---
