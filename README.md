@@ -57,14 +57,21 @@ python scripts/ast_mutator.py
 Agent_to_Agent/
 ├── data/
 │   └── curated_tasks.json     # Curated lightweight benchmark tasks (< 5MB)
+├── deep-docs/
+│   └── future_implementation.md # Technical scalability & future implementation roadmap
 ├── docs/
 │   ├── RESEARCH_PLAN.md       # Full academic blueprint (SWE-bench -> Terminal-Bench -> DeepSWE)
 │   ├── TEAM_ONBOARDING.md     # 3-weekend step-by-step milestone guide for teammates
 │   └── GRANT_PROPOSAL.md      # Itemized funding proposal for compute & cloud grants
 ├── scripts/
 │   ├── ast_mutator.py         # AST semantic mutation engine
+│   ├── code_sanitizer.py      # AST parsing, markdown stripping, import deduplication
 │   ├── download_subset.py     # Lightweight benchmark task extractor
-│   └── run_local_audit.py     # End-to-end local demonstration runner
+│   ├── llm_client.py          # Multi-provider client (Groq, OpenAI, Ollama) & .env loader
+│   ├── run_local_audit.py     # End-to-end local demonstration runner
+│   ├── sandbox.py             # Isolated subprocess execution sandbox
+│   ├── verifier_gate.py       # Dual-execution judge (Soundness & Completeness)
+│   └── verifier_synthesizer.py # Autonomous test synthesis orchestrator
 ├── requirements.txt           # Lightweight dependencies (pytest, datasets, rich)
 └── README.md
 ```

@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-scripts/ast_mutator.py
-
-Autonomous AST-guided mutation engine.
-Parses Python code and systematically generates semantic mutants:
-  - Comparison operator inversion (== -> !=, < -> <=)
-  - Boolean literal inversion (True -> False)
-  - Boundary shift & Constant perturbation (x > max_age -> x >= max_age + 1)
-  - Return nullification (return payload -> return None)
-"""
 
 import ast
 import copy
@@ -100,7 +90,6 @@ def generate_mutants(source_code: str) -> List[Dict[str, Any]]:
     """
     mutants = []
     
-    # 1. Generate comparison mutants
     tree = ast.parse(source_code)
     comp_count = sum(1 for node in ast.walk(tree) if isinstance(node, ast.Compare) for _ in node.ops if type(_) in ComparisonMutator.OP_MAP)
     for i in range(comp_count):
@@ -123,7 +112,6 @@ def generate_mutants(source_code: str) -> List[Dict[str, Any]]:
                 "diff": diff
             })
 
-    # 2. Generate boolean mutants
     bool_count = sum(1 for node in ast.walk(tree) if isinstance(node, ast.Constant) and isinstance(node.value, bool))
     for i in range(bool_count):
         tree_copy = copy.deepcopy(tree)
@@ -145,7 +133,6 @@ def generate_mutants(source_code: str) -> List[Dict[str, Any]]:
                 "diff": diff
             })
 
-    # 3. Generate return mutants
     ret_count = sum(1 for node in ast.walk(tree) if isinstance(node, ast.Return))
     for i in range(ret_count):
         tree_copy = copy.deepcopy(tree)
