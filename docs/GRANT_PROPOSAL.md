@@ -31,16 +31,15 @@ This project introduces **Autonomous Adversarial Verifier Synthesis (AAVS)**, an
 
 ---
 
-## 3. Itemized Budget & Resource Request
+## 3. Items & Resource Requirements
 
-| Category | Description | Justification | Requested Amount (USD) |
-| :--- | :--- | :--- | :--- |
-| **Compute & Virtual Machines** | High-CPU Cloud Instances (32 vCPUs, 64GB RAM) for 6 months | Running concurrent Dockerized test harnesses and benchmark suites safely in parallel. | **$1,200** |
-| **High-Throughput Storage** | 2 TB NVMe Block Storage (Cloud SSD) | Storing and caching pre-built Docker images for SWE-bench & Terminal-bench environments. | **$600** |
-| **Inference Compute / API Tokens** | API credits for DeepSeek, OpenAI, and Anthropic; GPU on-demand compute | Generating semantic mutants, synthesizing new verification tests, and conducting baseline agent audits. | **$1,500** |
-| **Local Hardware Peripherals** | 2TB external NVMe SSD + Lab RAM upgrade | Local offline testing and development across team member workstations. | **$300** |
-| **Conference Publication & Dissemination** | Registration / Open-access fees for ACL/EMNLP or ICLR submission | Publishing findings, open-sourcing the dataset, and presenting the framework. | **$1,000** |
-| **Total Funding Request** | | | **$4,600** |
+| Category | Description | Justification |
+| :--- | :--- | :--- |
+| **Compute & Virtual Machines** | High-CPU Cloud Instances (32 vCPUs, 64GB RAM) for 6 months | Running concurrent Dockerized test harnesses and benchmark suites safely in parallel. |
+| **High-Throughput Storage** | 2 TB NVMe Block Storage (Cloud SSD) | Storing and caching pre-built Docker images for SWE-bench & Terminal-bench environments. |
+| **Inference Compute / API Tokens** | API credits for DeepSeek, OpenAI, and Anthropic; GPU on-demand compute | Generating semantic mutants, synthesizing new verification tests, and conducting baseline agent audits. 
+| **Local Hardware Peripherals** | 2TB external NVMe SSD + Lab RAM upgrade | Local offline testing and development across team member workstations.
+| **Conference Publication & Dissemination** | Registration / Open-access fees for ACL/EMNLP or ICLR submission | Publishing findings, open-sourcing the dataset, and presenting the framework. |
 
 ---
 
