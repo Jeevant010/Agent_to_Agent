@@ -60,6 +60,7 @@ Agent_to_Agent/
 ├── deep-docs/
 │   └── future_implementation.md # Technical scalability & future implementation roadmap
 ├── docs/
+│   ├── ARCHITECTURE.md        # System architecture & comprehensive file catalog
 │   ├── RESEARCH_PLAN.md       # Full academic blueprint (SWE-bench -> Terminal-Bench -> DeepSWE)
 │   ├── TEAM_ONBOARDING.md     # 3-weekend step-by-step milestone guide for teammates
 │   └── GRANT_PROPOSAL.md      # Itemized funding proposal for compute & cloud grants
