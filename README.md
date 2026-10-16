@@ -56,13 +56,17 @@ python scripts/ast_mutator.py
 ```
 Agent_to_Agent/
 ├── data/
-│   └── curated_tasks.json     # Curated lightweight benchmark tasks (< 5MB)
+│   ├── curated_tasks.json     # Curated lightweight benchmark tasks (< 5MB)
+│   └── mutated_preds.jsonl    # Formatted mutant patch predictions for SWE-bench harness
 ├── deep-docs/
 │   └── future_implementation.md # Technical scalability & future implementation roadmap
 ├── docs/
+│   ├── LITERATURE_SURVEY.md   # Critical reading syllabus & paper-by-paper literature analysis
 │   ├── RESEARCH_PLAN.md       # Full academic blueprint (SWE-bench -> Terminal-Bench -> DeepSWE)
 │   ├── TEAM_ONBOARDING.md     # 3-weekend step-by-step milestone guide for teammates
-│   └── GRANT_PROPOSAL.md      # Itemized funding proposal for compute & cloud grants
+│   └── GRANT_PROPOSAL.md      # Itemized resource requirements for compute & cloud grants
+├── paper_notes/
+│   └── experiment_log.md      # Living research notebook, hypotheses, and empirical tables
 ├── scripts/
 │   ├── ast_mutator.py         # AST semantic mutation engine
 │   ├── code_sanitizer.py      # AST parsing, markdown stripping, import deduplication
@@ -90,6 +94,7 @@ Agent_to_Agent/
 
 ## 📖 Key Documentation
 
+- 📚 **[Academic Literature Survey](docs/LITERATURE_SURVEY.md)**: Comprehensive survey across coding agent benchmarks, test incompleteness, mutation analysis, and automated verifier synthesis.
 - 📄 **[Research Plan & Epistemic Thesis](docs/RESEARCH_PLAN.md)**: Formal mathematical definitions, surviving mutant rates, and target venues (EMNLP / ICLR / ICSE).
 - 👥 **[Teammate Onboarding Guide](docs/TEAM_ONBOARDING.md)**: Zero-friction guide for teammates with practical milestones.
-- 💰 **[Compute Grant & Funding Proposal](docs/GRANT_PROPOSAL.md)**: Complete proposal with an itemized budget ($4,600) for OpenAI / Google Cloud / AWS research grants.
+- 📋 **[Resource Requirements Proposal](docs/GRANT_PROPOSAL.md)**: Compute, storage, and token requirements for cloud research access.
