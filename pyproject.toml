@@ -34,6 +34,7 @@ dev = [
 [project.scripts]
 aavs-audit = "scripts.runners.run_local_audit:main"
 aavs-mutator = "scripts.mutator.patch_mutator:generate_patch_mutants"
+aavs-benchmark = "scripts.runners.run_benchmark_task:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
