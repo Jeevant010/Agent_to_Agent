@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """
-scripts/verifier_gate.py
+scripts/verifier/verifier_gate.py
 
 The Dual-Execution Judge for Bi-Directional Verifier Validation:
   1. Soundness: Candidate test must strictly PASS on reference gold implementation.
   2. Completeness: Candidate test must strictly FAIL on the mutated implementation.
 """
 
+import sys
+from pathlib import Path
 from typing import Dict, Any
-from sandbox import execute_in_sandbox
+
+try:
+    from .sandbox import execute_in_sandbox
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from sandbox import execute_in_sandbox
 
 
 def validate_bi_directional_criteria(

@@ -54,60 +54,47 @@ Once both conditions are met, the new test is accepted, closing the loophole.
 
 ## 3. What Each File Does
 
-### Running the Project (`scripts/`)
+### Core Subsystems (`scripts/`)
 
-- [`scripts/run_local_audit.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/run_local_audit.py)  
-  **The main demo runner.** It runs the whole process in your terminal with colorful tables. It injects bugs into a sample discount function, finds which bugs slip past the tests, and asks the LLM to write tests to fix the blind spots.
+#### 1. Mutator Subsystem (`scripts/mutator/`) — Attacker
+- [`scripts/mutator/ast_mutator.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/mutator/ast_mutator.py): Global AST mutation engine injecting comparison, boolean, and return perturbations.
+- [`scripts/mutator/diff_parser.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/mutator/diff_parser.py): Parses unified diff hunks (`@@ -start,len +start,len @@`) and applies in-memory text patches.
+- [`scripts/mutator/ast_transformers.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/mutator/ast_transformers.py): Line-constrained AST transformers that restrict mutations strictly to modified patch lines.
+- [`scripts/mutator/patch_mutator.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/mutator/patch_mutator.py): Orchestrates diff parsing, in-memory patching, and line-constrained mutant generation.
 
-- [`scripts/ast_mutator.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/ast_mutator.py)  
-  **The bug injector (Attacker).** It reads Python code, turns it into an Abstract Syntax Tree (AST), and creates variations with small realistic bugs (e.g., flipping `==` to `!=`, `<` to `<=`, `True` to `False`, or returning `None`).
+#### 2. Verifier Subsystem (`scripts/verifier/`) — Defender
+- [`scripts/verifier/llm_client.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier/llm_client.py): Multi-provider client (Groq Llama 3.3 70B, OpenAI, Ollama) with Cloudflare-safe headers and .env loader.
+- [`scripts/verifier/code_sanitizer.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier/code_sanitizer.py): Strips markdown fences and reasoning blocks (`<think>`), deduplicates imports, and extracts target functions.
+- [`scripts/verifier/sandbox.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier/sandbox.py): Spawns temporary directories for isolated pytest subprocess execution with timeouts.
+- [`scripts/verifier/verifier_gate.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier/verifier_gate.py): Dual-execution judge enforcing Soundness (gold pass) and Completeness (mutant kill).
+- [`scripts/verifier/verifier_synthesizer.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier/verifier_synthesizer.py): Orchestrates LLM synthesis prompts, iterative error feedback, and retry loops.
 
-- [`scripts/verifier_synthesizer.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier_synthesizer.py)  
-  **The synthesis coordinator (Defender).** It coordinates the LLM, the code cleaner, and the verification gate. If the LLM writes an invalid test, it sends the failure message back to the LLM and asks it to try again.
-
-- [`scripts/llm_client.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/llm_client.py)  
-  **The LLM connector.** A lightweight client that talks to Groq (Llama 3.3 70B), OpenAI, or local Ollama. It automatically loads your API key from `.env` and includes headers so Cloudflare doesn't block the request.
-
-- [`scripts/code_sanitizer.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/code_sanitizer.py)  
-  **The code cleaner.** Takes messy text from the LLM, strips out chat explanations and reasoning tags (`<think>`), removes duplicate imports, and makes sure the code is valid Python syntax before anything runs.
-
-- [`scripts/sandbox.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/sandbox.py)  
-  **The safe runner.** Runs `pytest` inside a clean, temporary folder on your computer so test runs don't interfere with each other or freeze your machine if a mutant loops forever.
-
-- [`scripts/verifier_gate.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/verifier_gate.py)  
-  **The judge.** Runs candidate tests twice: once on good code and once on bad code. It only approves the test if good code passes and bad code fails.
-
-- [`scripts/download_subset.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/download_subset.py)  
-  **The data downloader.** Downloads a small slice of real bug-fix tasks from the `SWE-bench_Verified` benchmark (< 5 MB) so you can test on real code without downloading gigabytes of Docker images.
+#### 3. Runners Subsystem (`scripts/runners/`) — Execution CLIs
+- [`scripts/runners/run_local_audit.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/runners/run_local_audit.py): Interactive terminal audit demo with rich tables and live verifier hardening.
+- [`scripts/runners/download_subset.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/scripts/runners/download_subset.py): Streams lightweight task parquets (< 5MB) from SWE-bench Verified.
 
 ---
 
 ### Benchmark Data (`data/`)
 
-- [`data/curated_tasks.json`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/data/curated_tasks.json)  
-  Contains real bug-fix tasks downloaded from GitHub repositories (like `astropy`). Each task includes the problem description, the real code patch, and the unit tests written by human developers.
+- [`data/curated_tasks.json`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/data/curated_tasks.json): Contains real bug-fix tasks downloaded from GitHub repositories (like `astropy`). Each task includes the problem description, the real code patch, and the unit tests written by human developers.
 
 ---
 
 ### Tests (`tests/`)
 
-- [`tests/test_verifier_synthesizer.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/tests/test_verifier_synthesizer.py)  
-  Unit tests for our own pipeline code. It verifies that markdown stripping works, empty outputs are caught, the sandbox executes properly, and the dual-execution gate works.
+- [`tests/test_patch_mutator.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/tests/test_patch_mutator.py): Unit tests for unified diff parsing, in-memory patch application, and line-constrained AST mutations.
+- [`tests/test_verifier_synthesizer.py`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/tests/test_verifier_synthesizer.py): Unit tests for markdown stripping, empty output validation, sandbox execution, and the dual-execution gate.
 
 ---
 
 ### Documentation (`docs/` & `deep-docs/`)
 
-- [`docs/ARCHITECTURE.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/ARCHITECTURE.md)  
-  *This file!* A friendly guide explaining what every file in the project does.
-- [`docs/RESEARCH_PLAN.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/RESEARCH_PLAN.md)  
-  The formal academic research plan targeting conferences like ACL, EMNLP, and ICLR.
-- [`docs/TEAM_ONBOARDING.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/TEAM_ONBOARDING.md)  
-  A quick-start guide for new teammates to set up their laptop and run their first experiment in 5 minutes.
-- [`docs/GRANT_PROPOSAL.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/GRANT_PROPOSAL.md)  
-  A proposal written for cloud compute grants and university funding.
-- [`deep-docs/future_implementation.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/deep-docs/future_implementation.md)  
-  Future technical upgrades, including running tests in parallel across all CPU cores and automatic boundary value test generation.
+- [`docs/ARCHITECTURE.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/ARCHITECTURE.md): *This file!* A friendly guide explaining what every file in the project does.
+- [`docs/RESEARCH_PLAN.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/RESEARCH_PLAN.md): The formal academic research plan targeting conferences like ACL, EMNLP, and ICLR.
+- [`docs/TEAM_ONBOARDING.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/TEAM_ONBOARDING.md): A quick-start guide for new teammates to set up their laptop and run their first experiment in 5 minutes.
+- [`docs/GRANT_PROPOSAL.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/docs/GRANT_PROPOSAL.md): A proposal written for cloud compute grants and university funding.
+- [`deep-docs/future_implementation.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/deep-docs/future_implementation.md): Future technical upgrades, including running tests in parallel across all CPU cores and automatic boundary value test generation.
 
 ---
 
@@ -115,5 +102,6 @@ Once both conditions are met, the new test is accepted, closing the loophole.
 
 - [`.env.example`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/.env.example): Example file showing where to put your `GROQ_KEY`.
 - [`.gitignore`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/.gitignore): Tells Git not to commit secret API keys or temporary cache files.
+- [`pyproject.toml`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/pyproject.toml): Modern PEP 517/621 build configuration enabling editable installation (`pip install -e .`) and registering the `aavs-audit` CLI command.
 - [`requirements.txt`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/requirements.txt): The 3 Python packages needed to run (`pytest`, `datasets`, `rich`).
 - [`README.md`](file:///c:/Users/aadit/Desktop/Agent_to_Agent/README.md): The main front page of the repository on GitHub.

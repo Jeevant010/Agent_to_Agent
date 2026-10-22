@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aavs"
+version = "0.1.0"
+description = "Autonomous Adversarial Verifier Synthesis (AAVS) for AI coding agent benchmarks"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "AAVS Research Team" }
+]
+keywords = [
+    "nlp4se",
+    "software-engineering",
+    "mutation-testing",
+    "autonomous-verifiers",
+    "swe-bench",
+    "llm-benchmarks"
+]
+dependencies = [
+    "pytest>=8.0.0",
+    "rich>=13.0.0",
+    "datasets>=2.18.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0"
+]
+
+[project.scripts]
+aavs-audit = "scripts.runners.run_local_audit:main"
+aavs-mutator = "scripts.mutator.patch_mutator:generate_patch_mutants"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scripts*"]

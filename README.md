@@ -68,15 +68,22 @@ Agent_to_Agent/
 ├── paper_notes/
 │   └── experiment_log.md      # Living research notebook, hypotheses, and empirical tables
 ├── scripts/
-│   ├── ast_mutator.py         # AST semantic mutation engine
-│   ├── code_sanitizer.py      # AST parsing, markdown stripping, import deduplication
-│   ├── download_subset.py     # Lightweight benchmark task extractor
-│   ├── llm_client.py          # Multi-provider client (Groq, OpenAI, Ollama) & .env loader
-│   ├── run_local_audit.py     # End-to-end local demonstration runner
-│   ├── sandbox.py             # Isolated subprocess execution sandbox
-│   ├── verifier_gate.py       # Dual-execution judge (Soundness & Completeness)
-│   └── verifier_synthesizer.py # Autonomous test synthesis orchestrator
-├── requirements.txt           # Lightweight dependencies (pytest, datasets, rich)
+│   ├── mutator/               # Attacker Subsystem (AST Mutation & Diffs)
+│   │   ├── ast_mutator.py     # Global AST mutation engine
+│   │   ├── ast_transformers.py # Line-constrained AST visitors
+│   │   ├── diff_parser.py     # Git unified diff parser & hunk patcher
+│   │   └── patch_mutator.py   # Diff-aware patch mutation orchestrator
+│   ├── verifier/              # Defender Subsystem (LLM Synthesis & Gate)
+│   │   ├── llm_client.py      # Multi-provider client (Groq, OpenAI, Ollama)
+│   │   ├── code_sanitizer.py  # Markdown stripping, think-tag filter, AST extraction
+│   │   ├── sandbox.py         # Subprocess temporary directory execution
+│   │   ├── verifier_gate.py   # Dual-execution judge (Soundness & Completeness)
+│   │   └── verifier_synthesizer.py # Autonomous test synthesis orchestrator
+│   └── runners/               # High-Level CLI Entrypoints
+│       ├── run_local_audit.py # End-to-end interactive terminal audit demo
+│       └── download_subset.py # SWE-bench verified task downloader
+├── pyproject.toml           # Modern PEP 517/621 package build configuration
+├── requirements.txt         # Core dependencies (pytest, datasets, rich)
 └── README.md
 ```
 
