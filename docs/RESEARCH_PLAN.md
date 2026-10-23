@@ -11,9 +11,12 @@
 
 Current benchmarks for Large Language Model (LLM) agents—such as **SWE-bench**, **Terminal-Bench**, and **DeepSWE**—assess task completion primarily through **outcome-based verification** (e.g., unit test pass/fail status or exit codes). 
 
-Recent audits (e.g., *Are Benchmark Tests Strong Enough?*, April 2026; *SWE-Mutation*, May 2026) have established that:
-- **Up to 77% of benchmark unit tests contain critical semantic blind spots.**
-- Incomplete test coverage allows agents to pass benchmarks via **unfaithful shortcuts**, including:
+Recent audits have established the premise, with different denominators:
+- **77% of SWE-bench Verified instances admit at least one surviving program variant** (Probe to Generate, P0120).
+- **345 patches were reclassified** as false passes, affecting 40.9% of SWE-bench Lite and 24.4% of Verified leaderboard entries (UTBoost, P0001).
+- **19.71% of previously passing patches were rejected** after adversarial strengthening; the previous top agent falls to fifth (SWE-ABS, P0837).
+
+Incomplete test coverage allows agents to pass benchmarks via **unfaithful shortcuts**, including:
   1. Hardcoding targeted edge cases.
   2. Bypassing unasserted preconditions and security invariants.
   3. Modifying hidden global state without triggering test failures.
@@ -21,7 +24,7 @@ Recent audits (e.g., *Are Benchmark Tests Strong Enough?*, April 2026; *SWE-Muta
 
 ### The Core Research Thesis
 > **Outcome-based regression tests are insufficient as verifiers and reward signals for autonomous agents.**  
-> Verification must be **adversarial, semantic, and autonomous**. By structuring verifier hardening as an adversarial game between a **Semantic Mutator Agent** (Attacker) and a **Trace-Conditioned Verifier Synthesizer** (Defender), we can mathematically identify and eliminate test suite loopholes without manual human engineering.
+> Verification must be **adversarial, semantic, and autonomous**. By structuring verifier hardening as an adversarial game between a **Semantic Mutator Agent** (Attacker) and a **Trace-Conditioned Verifier Synthesizer** (Defender), the system can identify and eliminate test-suite loopholes without manual human engineering.
 
 ---
 
@@ -93,9 +96,9 @@ subject to the **Strict Bi-Directional Validity Criteria**:
 
 | Metric Name | Mathematical Formulation | Scientific Purpose |
 | :--- | :--- | :--- |
-| **Initial Mutation Score ($MS_0$)** | $\frac{\text{Mutants Killed by } \mathcal{V}_0}{\text{Total Valid Mutants}}$ | Quantifies the vulnerability of existing industry benchmarks before our intervention. |
+| **Initial Mutation Score ($MS_0$)** | $\frac{\text{Mutants Killed by } \mathcal{V}_0}{\text{Total Valid Mutants}}$ | Quantifies the vulnerability of existing industry benchmarks before the intervention. |
 | **Surviving Mutant Rate (SMR)** | $1 - MS_0$ | Headline metric proving how often benchmark verifiers allow buggy code to pass. |
-| **Hardened Mutation Score ($MS_{\text{hard}}$)** | $\frac{\text{Mutants Killed by } \mathcal{V}_{\text{hardened}}}{\text{Total Valid Mutants}}$ | Measures the rigor and closing of test loopholes achieved by our automated pipeline. |
+| **Hardened Mutation Score ($MS_{\text{hard}}$)** | $\frac{\text{Mutants Killed by } \mathcal{V}_{\text{hardened}}}{\text{Total Valid Mutants}}$ | Measures the rigor and closure of test loopholes achieved by the pipeline. |
 | **Agent Accuracy Collapse ($\Delta \text{Pass@1}$)** | $\text{Pass@1}(\mathcal{V}_0) - \text{Pass@1}(\mathcal{V}_{\text{hardened}})$ | Re-evaluates top models (Claude 3.5, GPT-4o, Qwen-2.5-Coder) to show how much of their performance was inflated by weak tests. |
 
 ---
