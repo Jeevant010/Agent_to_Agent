@@ -1,28 +1,80 @@
 # Autonomous Adversarial Verifier Synthesis (AAVS)
-> **Eliminating False Positives & Reward Hacking in Autonomous AI Agent Benchmarks**
+
+A research prototype for auditing and hardening the test verifiers used to evaluate coding agents.
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Research Track](https://img.shields.io/badge/Track-NLP4SE%20%7C%20AI%20Alignment-purple.svg)](docs/RESEARCH_PLAN.md)
 
 ---
 
-## 📌 Overview
+## Overview
 
-Large Language Model (LLM) coding agents are evaluated and trained using outcome-based test verifiers (e.g., `SWE-bench`, `Terminal-Bench`, `DeepSWE`). However, recent 2026 audits reveal that **up to 77% of benchmark unit tests suffer from coverage deficits**, allowing agents to pass tasks using shortcut heuristics, edge-case hardcoding, and state corruption (**Reward Hacking**).
+Coding agents are evaluated and trained with outcome-based verifiers: a patch is treated as
+correct if it passes the repository's tests. Independent audits in 2025 and 2026 show that this
+assumption is too weak.
 
-**AAVS** is a model-agnostic, zero-human-verifier framework that deterministically stress-tests and hardens agent verifiers:
-1. **Adversarial Mutation (Attacker):** Injects semantic, AST-guided bugs into reference solutions.
-2. **Blind Spot Detection:** Catches surviving mutants where broken code falsely passes existing test suites.
-3. **Automated Verifier Synthesis (Defender):** Synthesizes strict, bi-directionally verified test assertions to close loopholes.
+- 77% of SWE-bench Verified instances admit at least one surviving program variant (P0120).
+- 345 patches previously marked as passing were reclassified by UTBoost (P0001).
+- 19.71% of passing patches were rejected after adversarial strengthening (P0837).
+
+AAVS applies an adversarial loop to a verifier:
+
+1. **Attacker.** Injects semantic, AST-guided bugs into a reference solution.
+2. **Blind-spot detector.** Runs the original suite on each mutant and records survivors.
+3. **Defender.** Synthesizes targeted assertions against the survivors.
+4. **Judge.** Retains a test only if the gold patch passes (soundness) and the mutant fails
+   (completeness).
+
+The project does not claim this loop is new. The closest prior work already implements it in
+narrow settings. The contribution targeted here is a released protocol that reports both false
+passes and false rejections, with per-task provenance, across code and container state. The
+evidence and the scope of the claim are documented in
+[`docs/STATE_OF_THE_FIELD.md`](docs/STATE_OF_THE_FIELD.md).
 
 ---
 
-## 🚀 Quickstart (Under 3 Minutes)
+## Repository layout
 
-Get running locally on your laptop with **zero GPU or Docker setup required**:
+```
+Agent_to_Agent/
+├── data/
+│   └── curated_tasks.json          # Lightweight SWE-bench task records
+├── papers/
+│   ├── pdf/                        # Open-access PDFs
+│   ├── text/                       # Extracted full text
+│   └── metadata/                   # Corpus JSONL, CSV, BibTeX, query cache
+├── docs/
+│   ├── README.md                   # Documentation index
+│   ├── STATE_OF_THE_FIELD.md       # Prior work, gaps, and defensible claims
+│   ├── PAPER_COMPARISON.md         # 37-paper comparison table
+│   ├── NEXT_STEPS.md               # Execution order and acceptance criteria
+│   ├── RESEARCH_PLAN.md            # Definitions, metrics, and staged roadmap
+│   ├── ARCHITECTURE.md             # Codebase guide
+│   ├── AAVS_Literature_Review_Main.docx
+│   └── archive/                    # Generated literature dumps (not required reading)
+├── paper_notes/
+│   └── experiment_log.md           # Research notebook and empirical notes
+├── scripts/
+│   ├── ast_mutator.py              # AST mutation engine (eight operator families)
+│   ├── patch_mutator.py            # Patch-aware mutation (changed lines only)
+│   ├── code_sanitizer.py           # Code extraction and import deduplication
+│   ├── sandbox.py                  # Isolated subprocess execution
+│   ├── verifier_gate.py            # Dual-execution soundness/completeness gate
+│   ├── verifier_synthesizer.py     # Test synthesis orchestrator
+│   ├── llm_client.py               # Groq, OpenAI, and Ollama client
+│   ├── run_local_audit.py          # End-to-end local demonstration
+│   ├── download_subset.py          # Benchmark task extractor
+│   ├── build_google_doc.py         # Review generator (docx and txt)
+│   └── archive/                    # Corpus harvesting and report generation scripts
+├── tests/                          # Offline unit tests for the core pipeline
+├── requirements.txt
+└── README.md
+```
 
-### 1. Setup Environment
+---
+
+## Quickstart
+
 ```bash
 git clone https://github.com/Jeevant010/Agent_to_Agent.git
 cd Agent_to_Agent
@@ -32,69 +84,74 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Run the Local Verifier Audit Demo
-Witness AST mutation and verifier loophole detection live in your terminal:
+Run the audit without an API key:
+
+```bash
+python scripts/run_local_audit.py --audit-only
+```
+
+Run the full loop with a configured provider:
+
 ```bash
 python scripts/run_local_audit.py
 ```
 
-### 3. Download Curated Benchmark Tasks
-Download a lightweight, curated subset of tasks from Hugging Face (< 5 MB) without pulling multi-gigabyte Docker images:
+The audit-only mode injects all eight mutation families, runs the existing suite, and reports the
+Surviving Mutant Rate (SMR). The full mode additionally requests hardened assertions from the
+configured LLM and validates them through the dual sandbox gate.
+
+Download additional benchmark tasks:
+
 ```bash
 python scripts/download_subset.py --count 5 --output data/curated_tasks.json
 ```
 
-### 4. Run AST Mutation on Any Function
+Run the tests:
+
 ```bash
-python scripts/ast_mutator.py
+python -m pytest tests -q
 ```
 
 ---
 
-## 📂 Repository Structure
+## Metrics
 
-```
-Agent_to_Agent/
-├── data/
-│   ├── curated_tasks.json     # Curated lightweight benchmark tasks (< 5MB)
-│   └── mutated_preds.jsonl    # Formatted mutant patch predictions for SWE-bench harness
-├── deep-docs/
-│   └── future_implementation.md # Technical scalability & future implementation roadmap
-├── docs/
-│   ├── LITERATURE_SURVEY.md   # Critical reading syllabus & paper-by-paper literature analysis
-│   ├── RESEARCH_PLAN.md       # Full academic blueprint (SWE-bench -> Terminal-Bench -> DeepSWE)
-│   ├── TEAM_ONBOARDING.md     # 3-weekend step-by-step milestone guide for teammates
-│   └── GRANT_PROPOSAL.md      # Itemized resource requirements for compute & cloud grants
-├── paper_notes/
-│   └── experiment_log.md      # Living research notebook, hypotheses, and empirical tables
-├── scripts/
-│   ├── ast_mutator.py         # AST semantic mutation engine
-│   ├── code_sanitizer.py      # AST parsing, markdown stripping, import deduplication
-│   ├── download_subset.py     # Lightweight benchmark task extractor
-│   ├── llm_client.py          # Multi-provider client (Groq, OpenAI, Ollama) & .env loader
-│   ├── run_local_audit.py     # End-to-end local demonstration runner
-│   ├── sandbox.py             # Isolated subprocess execution sandbox
-│   ├── verifier_gate.py       # Dual-execution judge (Soundness & Completeness)
-│   └── verifier_synthesizer.py # Autonomous test synthesis orchestrator
-├── requirements.txt           # Lightweight dependencies (pytest, datasets, rich)
-└── README.md
-```
+| Metric | Definition | Purpose |
+| :--- | :--- | :--- |
+| `SMR` | Surviving mutants divided by valid mutants | Measures the weakness of the original verifier. |
+| `VHR` | Survivors killed by the hardened suite, with the gold patch still passing | Measures hardening without false rejection. |
+| `FRR` | Valid gold-patch runs rejected by the hardened suite | The false-rejection side, rarely reported in prior work. |
+| `FPFR` | Public agent patches that passed originally and fail under the hardened suite | Re-evaluates leaderboard results without re-running agents. |
 
 ---
 
-## 🔬 3-Stage Research Roadmap
+## Roadmap
 
-| Stage | Benchmark Focus | Verification Frontier | Hardware Profile |
-| :--- | :--- | :--- | :--- |
-| **Stage 1** | **SWE-bench Verified** | Python code AST mutations, branch omissions, unit test gaps | Standard laptop / Single GPU |
-| **Stage 2** | **Terminal-Bench** | Stateful Linux OS, filesystem diffs, exit-code & stdout faking | Multi-container Docker host |
-| **Stage 3** | **DeepSWE** | Polyglot (Python, Go, TS, Rust), non-contaminated real-world repositories | Distributed cluster / Cloud grant |
+| Stage | Benchmark | Focus |
+| :--- | :--- | :--- |
+| 1 | SWE-bench Verified | Python AST mutations, branch omissions, unit-test gaps |
+| 2 | Terminal-Bench | Filesystem state, exit codes, stdout spoofing |
+| 3 | DeepSWE | Polyglot repositories, contamination-resistant tasks |
+
+The work required to reach Stage 1 is specified in [`docs/NEXT_STEPS.md`](docs/NEXT_STEPS.md).
 
 ---
 
-## 📖 Key Documentation
+## Documentation
 
-- 📚 **[Academic Literature Survey](docs/LITERATURE_SURVEY.md)**: Comprehensive survey across coding agent benchmarks, test incompleteness, mutation analysis, and automated verifier synthesis.
-- 📄 **[Research Plan & Epistemic Thesis](docs/RESEARCH_PLAN.md)**: Formal mathematical definitions, surviving mutant rates, and target venues (EMNLP / ICLR / ICSE).
-- 👥 **[Teammate Onboarding Guide](docs/TEAM_ONBOARDING.md)**: Zero-friction guide for teammates with practical milestones.
-- 📋 **[Resource Requirements Proposal](docs/GRANT_PROPOSAL.md)**: Compute, storage, and token requirements for cloud research access.
+The index is [`docs/README.md`](docs/README.md). The primary documents are:
+
+- [`docs/STATE_OF_THE_FIELD.md`](docs/STATE_OF_THE_FIELD.md): closest prior work, documented
+  failure modes, and the claims the project can defend.
+- [`docs/PAPER_COMPARISON.md`](docs/PAPER_COMPARISON.md): 37 papers compared on authors, year,
+  tools, domain, pros, cons, and future work.
+- [`docs/NEXT_STEPS.md`](docs/NEXT_STEPS.md): execution order, acceptance criteria, and kill
+  criteria.
+- [`docs/RESEARCH_PLAN.md`](docs/RESEARCH_PLAN.md): formal definitions and staged plan.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): codebase guide.
+- [`docs/AAVS_Literature_Review_Main.docx`](docs/AAVS_Literature_Review_Main.docx): the
+  submission-ready review, including the comparison tables.
+
+Generated literature dumps are kept locally in `docs/archive/` (gitignored); they are retained for
+traceability and are not required reading. The 1,500-paper corpus in `papers/` is likewise local
+data and is not committed.
