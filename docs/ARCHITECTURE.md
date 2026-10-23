@@ -153,10 +153,10 @@ The five files that matter are indexed in [`docs/README.md`](../docs/README.md).
 - [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)  
   *This file!* A friendly guide explaining what every file in the project does.
 
-Generated literature dumps are in [`docs/archive/`](../docs/archive/) and are not meant to be read:
+Generated literature dumps are in `docs/archive/` (gitignored) and are not meant to be read:
 the full 1,500-record index, the compendium, per-paper dossiers, the older surveys, the evidence
-matrix, the citation audit, and the expanded appendix. They can be regenerated with the scripts in
-`scripts/`.
+matrix, the citation audit, and the expanded appendix. They can be regenerated with the scripts
+in `scripts/archive/`.
 - [`deep-docs/future_implementation.md`](../deep-docs/future_implementation.md)  
   Future technical upgrades, including running tests in parallel across all CPU cores and automatic boundary value test generation.
 
