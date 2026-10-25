@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import sys
 import tempfile
 import subprocess
@@ -63,6 +64,14 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
 
+    parser = argparse.ArgumentParser(description="Local AAVS mutation/verifier audit")
+    parser.add_argument(
+        "--audit-only",
+        action="store_true",
+        help="Stop after mutation SMR reporting; do not call an LLM synthesizer.",
+    )
+    args = parser.parse_args()
+
     configure_logging()
 
     console.print(Panel.fit(
@@ -117,6 +126,13 @@ def main():
         title="[bold]Benchmark Vulnerability Metrics[/bold]",
         border_style="red" if smr > 0 else "green"
     ))
+
+    if args.audit_only:
+        console.print(
+            "\n[bold cyan]Audit-only mode:[/bold cyan] stopping before LLM synthesis. "
+            "Run without [bold]--audit-only[/bold] to synthesize hardened assertions."
+        )
+        return
 
     if surviving_mutants:
         console.print("\n[bold yellow]Step 5: Autonomous Verifier Hardening (Closing the Loop)[/bold yellow]")
