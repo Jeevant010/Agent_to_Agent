@@ -47,7 +47,19 @@ Using public `.patch` submissions downloaded directly from the official SWE-benc
 
 ---
 
-## 4. Single-Task Day-1 Log: `sympy__sympy-20590`
+## 4. Literature Corpus Baseline (2026-10-21)
+
+- **Corpus:** 1,500 deduplicated papers (540 A / 926 B / 34 C), 10 clusters; 1,112 open-access PDFs and 1,112 extracted full texts.
+- **Sources:** arXiv (1,103 records) + Crossref (536 records), deduplicated by arXiv ID / DOI / normalized title.
+- **Deliverables:** `docs/LITERATURE_CORPUS_REPORT.md`, `docs/PAPER_LIST.md`, `docs/LITERATURE_SYNTHESIS.md`, `docs/EVIDENCE_MATRIX.md`, `docs/FULLTEXT_SIGNAL_INDEX.md`, `docs/literature/dossiers_C*.md`, `docs/ANCHOR_PAPER_REVIEWS.md`.
+- **Review artifacts:** `docs/COMPLETE_PAPER_COMPENDIUM.md` (all 1,500 research cards), `docs/LITERATURE_DOSSIER.md` (cover + 5-minute walkthrough), `docs/literature_explorer.html` (searchable/filterable HTML).
+- **Citation audit:** all four previously cited arXiv IDs resolve, but all four document titles differ from the live records. The “24.4%–77.1%” range conflates two denominators; Terminal Wrench reports 331 environments / 3,632 trajectories, not 42 patterns / 150 tasks. See `docs/CITATION_INTEGRITY_AUDIT.md`.
+- **Defensible headline numbers:** 77% of SWE-bench Verified instances admit ≥1 surviving variant (P0120); 345 erroneous patches / 40.9% Lite / 24.4% Verified leaderboard entries / 18 and 11 ranking changes (P0001); 50.2% of instances strengthened and top score 78.80% → 62.20% (P0837).
+- **Next:** replace the unsupported numbers in the manuscript, add a contamination probe, and run the local SMR/VHR baseline on curated tasks.
+
+---
+
+## 5. Single-Task Day-1 Log: `sympy__sympy-20590`
 
 - **Task Overview:** `sympy__sympy-20590` deals with symbolic core expression traversal in `sympy/core/basic.py`.
 - **Target File:** `sympy/core/basic.py`
