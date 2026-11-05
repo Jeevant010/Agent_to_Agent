@@ -1,0 +1,22 @@
+# Taste
+- Never commit or push without an explicit go-ahead; work should be staged locally and left dirty until the user says so. Confidence: 0.9
+- Comfortable with long-running, unattended background work (multi-hour/overnight runs) and expects a consolidated summary report of what was produced by morning. Confidence: 0.65
+- Prefers self-directed execution: once a direction is given, wants the agent to keep finding and doing the next useful thing (e.g. side work on the main project while a long job runs) rather than stopping to ask. Confidence: 0.6
+- Wants exhaustive per-item coverage over samples — a list/report entry for every single item (e.g. every paper), not just highlights. Confidence: 0.85
+- Per-item entries must be substantive, not just a title in a list: each item should carry a structured record (summary/problem/method/findings/limitations, links, evidence level) so depth of coverage is visible. Confidence: 0.75
+- Prefers a single consolidated deliverable document (one complete file) over work spread across many split files — scatter reads as "not actually done". Confidence: 0.75
+- Wants final artifacts to be review-ready for a third party (teacher/advisor/supervisor): a cover dossier, a short demo/walkthrough path, and honest labelling of what was and was not deeply read. Confidence: 0.7
+- Prefers artifacts to live inside the repo in a dedicated folder (e.g. downloaded source files plus metadata) so the evidence is self-contained and inspectable. Confidence: 0.6
+- Strongly values provenance: real, live-verified links/sources and downloaded originals rather than remembered or assumed citations. Confidence: 0.75
+- Wants written deliverables exported in a paste-ready/upload-ready form for external editors (e.g. plain `.txt` plus a clean `.docx` for Google Docs), not only in-repo markdown. Confidence: 0.85
+- Prefers minimal formatting in documents meant for other people: content over styling, plain prose and simple headings, no emojis, colours, decorative tables, or heavy markdown. Confidence: 0.85
+- Wants generated prose to read as human-written rather than AI-generated (avoid AI clichés, filler, and templated phrasing). Confidence: 0.8
+- Documentation must stay readable: keep a short numbered must-read set (a handful of files, in reading order, with an estimate of read time) and move machine-generated bulk (huge indexes, compendiums, dumps) into an `archive/` subfolder instead of leaving it in the main docs tree. Confidence: 0.8
+- Wants an explicit "has anyone already done this?" gap analysis — state of the field, the closest prior work with how far each got and where it stopped, which failures to inherit, and what is actually new — not just descriptive per-paper summaries. Confidence: 0.7
+- Rejects overconfident novelty/absence claims: a "no one has done this" must be backed by evidence and stated with a confidence level plus a caveat that absence in the reviewed corpus is not proof of absence in the world. Confidence: 0.7
+- Wants deliverables shaped to the audience's expected format: when a teacher/reviewer shows a preferred structure (e.g. a comparison table with name, authors, year, tools, about, domain, pros, cons, future work), replicate that structure rather than inventing a different narrative form. Confidence: 0.65
+- When asked to commit, commit one file per commit with a scoped message — never a single bulk commit of many files. Confidence: 0.9
+- Repository docs must be written in neutral third person: no "you/your" instructions, no first-person "we/our", and no meta-coaching sections that tell the owner what to say to an advisor/teacher. Read it as project documentation a stranger could read, not as a personal script. Confidence: 0.9
+- Wants the script/utility tree pruned to only the essential pipeline scripts; retired or one-off generators should be deleted or moved out of the main directory rather than left lying around. Confidence: 0.75
+- The promised comparison tables/content must actually be present in the exported deliverable (e.g. the `.docx`), verified by inspecting the output file — not just living in a markdown source. Confidence: 0.7
+- Wants the literature review to end in a concrete "where to start" execution order — the first build step and acceptance criteria — not analysis alone. Confidence: 0.7

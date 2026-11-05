@@ -1,0 +1,2491 @@
+VERIFIER WEAKNESS AND VERIFICATION HARDENING IN CODING-AGENT BENCHMARKS
+
+A structured literature review of 1,500 papers, with detailed review of 95 unique core papers
+
+
+Prepared by: [Your name]
+
+Prepared for: [Course, advisor, or research group]
+
+Date: 22 October 2026
+
+
+Companion files: AAVS_Literature_Review_Appendix.txt (full 1,500-record index), AAVS_Literature_Review_GoogleDoc.docx (this document), and the project repository.
+
+
+Note on evidence. This review is based on a corpus of 1,500 papers. It does not claim that all 1,500 were read line by line. Every paper has a card and a source link. Evidence depth is stated for each card: full-text reviewed, full text scanned, abstract reviewed, or metadata only. The detailed entries in this document cover 95 core papers. The appendix lists the complete corpus so any claim can be spot-checked.
+
+
+The summary fields below are compressed from each paper's abstract or, where the abstract was unavailable, from its full text. They are not invented prose. The cluster narratives and the judgments about what is missing are the author's analysis.
+
+
+1. SCOPE AND QUESTION
+
+
+This review asks a narrow question: when a coding agent passes a repository's tests, what has actually been verified? Modern coding-agent benchmarks treat a patch as correct if it passes the tests supplied by the benchmark. That assumption is the object of study. The corpus covers benchmark audits, mutation testing, test-oracle synthesis, patch-correctness assessment, reward hacking, coding-agent benchmarks, reinforcement learning with verifiable rewards, and sandbox integrity.
+
+Two boundaries define the review. First, it is about code and execution, not generic prompt injection, phishing, malware classification, or AI governance. Second, it separates what a paper measured from what later summaries claimed. Several widely repeated numbers in the project's earlier notes did not match the live papers. Those corrections are recorded in Section 9.
+
+The review is written for a reader who wants to judge the evidence, not just read a reading list. Each detailed entry states the problem, the method, the result, the limitation, and the source. Where a paper's abstract does not contain a limitation, the entry says so instead of filling the gap.
+
+
+2. METHOD AND CORPUS
+
+
+The corpus was built from live arXiv and Crossref records on 21 and 22 October 2026. One hundred and twenty queries covered ten clusters. Each arXiv query returned up to 100 relevance-sorted records; each Crossref query returned up to 60. The raw harvest contained 19,072 records. After merging duplicates by arXiv ID, DOI, and normalized title, 10,454 unique records remained. A lexical relevance score and a domain filter reduced that set to 1,500 papers.
+
+The filters were designed to keep software-engineering and coding-agent work and to remove unrelated domains. Cryptography signature schemes, computer-vision adversarial patches, molecular design, clinical agents, and container-performance studies were penalized. The filters are not perfect. The corpus is a prioritized evidence base, not a systematic review registered in advance, and the scores are lexical rather than methodological.
+
+Open-access PDFs were downloaded from arXiv and publisher links. Every file was checked for the PDF magic bytes and a 10 KB minimum. 1,112 PDFs were downloaded and 1,112 full texts were extracted with pdftotext in plain reading order. 149 missing abstracts were filled from Semantic Scholar and marked as such. Fifty papers received full-text-assisted reviews. The remaining texts were indexed for AAVS-related terms.
+
+The corpus contains 540 tier A papers, 926 tier B papers, and 34 tier C papers. These tiers are prioritization labels, not quality judgments. The evidence levels are: 50 full-text reviewed, 1,062 full text scanned, 271 abstract reviewed, and 117 metadata only. The appendix lists every record with its cluster, priority, and source.
+
+
+3. WHAT THE LITERATURE SHOWS
+
+
+1. The premise is supported, but the numbers are not interchangeable.
+
+Three independent 2025-2026 audits find that passing tests do not imply a correct patch. Probe to Generate reports that 77% of SWE-bench Verified instances admit at least one surviving program variant (P0120). UTBoost reclassifies 345 patches and reports corrections affecting 40.9% of SWE-Bench Lite and 24.4% of SWE-Bench Verified leaderboard entries (P0001). SWE-ABS strengthens 50.2% of 500 Verified instances, rejects 19.71% of previously passing patches, and drops the top score from 78.80% to 62.20% (P0837). The units differ: instances, patches, leaderboard entries, and agents. The correct claim is that several audits converge on a material false-pass problem, not that a single percentage describes all benchmarks.
+
+
+2. Hardening changes rankings, not just scores.
+
+UTBoost reports 18 and 11 ranking changes on Lite and Verified (P0001). SWE-ABS reports that the previous top-ranked agent falls to fifth after strengthening (P0837). This matters for how the field interprets leaderboards: a benchmark that rewards shortcut-prone patches can change the relative order of systems, not merely inflate every score.
+
+
+3. Test generation is not the same as oracle generation.
+
+DCAware identifies a Self-Repair Trap: iterating until execution succeeds can drive models toward assertions that are easy to satisfy but weak at revealing faults (P0191). The oracle-generation study by Bodicoat et al. shows that regression oracles often encode the implemented behavior rather than the intended behavior (P0192). Coverage is weakly correlated with effectiveness once suite size is controlled (P0554), and assertions are a stronger signal (the assertion study in P0554's cluster). More tests do not automatically mean a stronger verifier.
+
+
+4. The harness is part of the system under test.
+
+Complex Agents, Shallow Tests finds that LLM-dependent harness code has less than half of its lines and branches covered by existing tests. Its HarnessTester reports 75.95% and 84.76% larger line and branch coverage gains, a 69.89% larger mutation-score gain, and 122 real harness bugs in widely used agentic systems (P0841). Verification therefore cannot stop at the patch; the execution scaffolding is also part of the system.
+
+
+5. Contamination is a credible competing explanation.
+
+The SWE-Bench Illusion reports up to 76% file-path identification accuracy from issue text on SWE-bench repositories, compared with 53% on repositories outside the benchmark (P0564). SWE-bench Live (1,319 tasks across 93 repositories, P0262) and Multi-SWE-bench (1,632 instances across seven languages, P0013) are partial remedies. Any claim that an agent solved a task needs a contamination control, not just a score.
+
+
+6. Environment-level reward hacking is documented, but defenses are not settled.
+
+Terminal Wrench releases 331 reward-hackable terminal environments, 3,632 hack trajectories, and 2,352 legitimate baselines across three frontier models (P0121). The exploits range from output spoofing to stack-frame introspection, standard-library patching, and rootkit-style binary hijacking. The Hack-Verifiable Environments line (P0058, P0071) turns hack detection into a measurement paradigm. The corpus does not contain a mature, task-agnostic defense covering both code-level and environment-level gaming. That is an open problem, not a solved one.
+
+
+7. Mutation testing is a defensible proxy, with a known equivalence problem.
+
+Just et al. show that mutants are statistically associated with real faults (P0555), which supports mutation-based auditing. The equivalent-mutant problem remains: syntactically different programs can be semantically identical, so some mutants cannot be killed by any test (P0239, P0032). A mutation score is not meaningful unless equivalence is handled or at least reported.
+
+
+8. Patch overfitting is old, measurable, and still unresolved.
+
+The patch-correctness survey (P0002) and the patch-overfitting study by Petke et al. (P0008) treat overfitting as a longstanding property of test-based repair. In P0008, the median number of plausible patches per Defects4J bug is two, so the practical problem is often selection among plausible patches rather than generating a single fix. This is exactly the gap a completeness gate is meant to close.
+
+
+9. Evaluation methodology is part of the contribution.
+
+The corpus contains a separate cluster on contamination, construct validity, benchmark leakage, and leaderboard reliability (C9). Reporting a score without its denominator, contamination control, and selection procedure is not a measurement. Papers such as Benchmark Leakage (P1623), Automated Benchmark Auditing (P1617), and contamination-resistant benchmark design (P1679) make this point directly.
+
+
+4. CURRENT STATUS OF THE FIELD
+
+
+The question a reviewer will ask is whether this project is doing anything that has not already been published. The honest answer is that every component exists, but the assembly does not exist as a single released system. Mutating a reference patch to expose weak tests is published (Probe to Generate, 2026; SWE-ABS, 2026). LLM test generation against surviving mutants is published (UTBoost, 2025; MUTGEN, 2026; PRIMG, 2025). Reward hacking in terminal environments is published and measured (Terminal Wrench, 2026; HVE and HVTB, 2026). This review found no paper in the 1,500-paper corpus that combines these into one model-agnostic loop reporting both false passes and false rejections, releasing a per-task hardened suite, and covering both code and container state. The project should therefore claim the protocol and the release, not the loop. Absence in this corpus is evidence, not proof; re-check before submission.
+
+
+Probe to Generate (P0120, 2026): closest to the full loop.
+
+It generates semantically modified variants of the reference patch, keeps the variants the original tests pass, generates targeted tests, and retains a test only if the gold patch passes, a surviving variant fails, and the test survives behavior-preserving transformations. On SWE-bench Verified, 77% of instances admit at least one surviving variant; 1,014 validated tests cover 211 instances; top-10 agents lose 4.2% to 9.0% resolved rate. It stops at test augmentation: no container/state layer and no released per-task hardened suite.
+
+
+SWE-ABS (P0837, 2026): strongest adversarial strengthening result.
+
+A two-stage pipeline combines coverage-driven augmentation with mutation-driven synthesis of plausible but incorrect patches. It strengthens 50.2% of 500 Verified instances, rejects 19.71% of previously passing patches, and lowers the top score from 78.80% to 62.20%; the previous leader falls to fifth. It stops at synthetic wrong patches that may not resemble real agent shortcuts, and it releases no reusable hardened suite.
+
+
+UTBoost (P0001, 2025): strongest leaderboard re-evaluation result.
+
+UTGenerator writes tests for real Python projects; UTBoost cross-validates gold and agent patches and re-grades public submissions. It reclassifies 345 patches; corrections affect 40.9% of SWE-bench Lite and 24.4% of Verified leaderboard entries, with 18 and 11 ranking changes. It only works on tasks some agent already solved and has no execution-state layer. UTBoost and SWE-ABS share a first author, so this is a small, fast-moving line, not a crowded field.
+
+
+Mutation-guided test synthesis (P0847, P1154, P1155, P0516): the defender's toolbox.
+
+MUTGEN feeds surviving mutants back into the prompt and beats EvoSuite on mutation score across 204 subjects. PRIMG prioritizes mutants before generating tests for Solidity. Tratto derives axiomatic oracles neuro-symbolically. TOGA infers oracles from method context. All operate at function level, not on repository patches or benchmark harnesses.
+
+
+Terminal Wrench, HVE and HVTB (P0121, P0058, P0071, 2026): the environment layer.
+
+Terminal Wrench releases 331 hackable environments, 3,632 exploit trajectories, and 2,352 legitimate baselines, with exploits ranging from output spoofing to stack-frame introspection and rootkit-style hijacking; monitor AUC falls from 0.97 to 0.92 without chain-of-thought. HVE and HVTB turn hack detection into a measurement protocol. They stop at measurement; there is no task-agnostic defense covering code and state.
+
+
+What this means for the contribution
+
+
+What is not new.
+
+Mutating code to test a suite, using an LLM to write tests, showing that SWE-bench tests are insufficient, re-grading public patches, and measuring terminal reward hacking are all published. A soundness-plus-completeness gate already exists inside Probe to Generate and SWE-ABS. These should be stated as prior work, not discovered as gaps.
+
+
+What is plausibly new.
+
+First, one protocol that reports two denominators: the false-pass rate and the false-rejection rate on the gold patch for the same tasks. Most papers report only the first. Second, a released, model-agnostic hardened suite with per-task provenance. Third, one gate over AST mutants and container/state hacks. The third claim needs Stage 2 data before it is asserted.
+
+
+The positioning sentence.
+
+Prior work shows that benchmark tests are weak and that individual components can be hardened; this project contributes a single released protocol that quantifies both directions of error, across code and execution state, on public artifacts.
+
+
+Scope.
+
+The security cluster is large and can take over the project. It should not. A patch that passes functional tests but introduces a CWE is a surviving mutant with a security label: one evaluation axis, one paragraph, not the organizing frame.
+
+
+5. PAPER COMPARISON
+
+
+The table below compares 37 core papers on the dimensions a reviewer normally asks for. Pros are the paper's reported results. Cons are stated limitations where available, plus scope limits implied by the evaluation. Future work is the paper's stated direction where the full text gives one. The same table, with source IDs, is in the repository at docs/PAPER_COMPARISON.md.
+
+
+
+## A. Benchmark audits and false passes
+
+| Name of Paper | Authors | Year | Tools Used | About | Domain | Pros | Cons | Future Work |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Probe to Generate: Program Variant-Guided Test Augmentation for Repository-Level Repair Benchmarks (P0120) | Chenglin Li, Yisen Xu, Zehao Wang, Shin Hwei Tan | 2026 | Program-variant generator; LLM test augmentation; SWE-bench harness | Semantically mutates the reference patch, treats surviving variants as probes of weak tests, then generates targeted tests | Repository-level Python repair (SWE-bench Verified) | 77% of instances admit ≥1 surviving variant; 1,014 validated tests across 211 instances; +10.8/+9.5 pp patch-region line/branch coverage; top-10 agents lose 4.2%-9.0% resolved rate | Test augmentation only; no container/state layer; no released per-task hardened suite; variant equivalence not fully resolved | Bridge inadequacy analysis and test generation in one framework; property-based or specification-mining alternatives to variant generation |
+| UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench (P0001) | Boxi Yu, Yuxuan Zhu, Pinjia He, Daniel Kang | 2025 | UTGenerator (LLM test generator); UTBoost; SWE-bench harness | Generates localization- and dependency-aware tests, cross-validates gold vs agent patches, re-grades public submissions | SWE-bench Lite and Verified (Python) | 36 insufficient-test instances; 345 erroneous patches reclassified; corrections affect 40.9% Lite / 24.4% Verified leaderboard entries; 18 and 11 rank changes | Only works on instances at least one agent already solved; one LLM (GPT-4o); requires cross-validation; no environment-level checks | Try other LLM backends; fold the generator into an agent architecture; adapt to other languages |
+| SWE-ABS: Adversarial Benchmark Strengthening Exposes Inflated Success Rates on Test-based Benchmarks (P0837) | Boxi Yu, Yang Cao, Yuzhong Zhang, Liting Lin | 2026 | Program slicing; coverage-driven augmentation; mutation-driven adversarial patch synthesis | Two-stage adversarial strengthening of test suites; rejects patches that still pass | SWE-bench Verified (500 instances) | Strengthens 50.2% of instances (25.1× prior work); rejects 19.71% of previously passing patches; top score 78.80% → 62.20%; previous leader falls to 5th | Synthesized incorrect patches may not resemble real agent shortcuts; coverage-driven stage inherits coverage's weak correlation with fault detection; no container layer | Weaken assumptions via property-based testing or specification mining; automated detection of overfitting |
+| SWE-Bench Pro V2: A Cleaner, Harder-to-Game Coding Benchmark (P0034) | Soham Dan, Jeff Da, Sanyam Bhutani, Miguel Romero Calvo | 2026 | Expert adjudication; clean-container re-grading; restricted network protocol | Maintains a benchmark over time: audits tasks, retires broken ones, re-grades every patch in a clean container | SWE-bench Pro (multi-repository) | 480 of 731 tasks repaired or retired; 642 V2 tasks; hardened protocol blocks retrieval of upstream fixes; keeps systems separated on a 51-task hard split | Maintenance is manual and expensive (23 engineers, 404 hours); it is benchmark hygiene, not automated verifier synthesis | Maintain benchmarks as capabilities advance; distill reusable maintenance lessons |
+| The SWE-Bench Illusion: When State-of-the-Art LLMs Remember Instead of Reason (P0564) | Shanchao Liang, Spandan Garg, Roshanak Zilouchian Moghaddam | 2025 | File-path identification and ground-truth function reproduction probes | Tests whether SWE-bench performance is partly memorization rather than reasoning | SWE-bench Verified vs non-benchmark repositories | Up to 76% file-path accuracy on SWE-bench repos vs 53% outside; a concrete contamination diagnostic | Diagnostic only, no mitigation; probe tasks are indirect measures of contamination; does not estimate how much score is contaminated | *Not stated in the abstract*; the implied direction is contamination-resistant benchmarks and probes |
+| Complex Agents, Shallow Tests: Demystifying and Enhancing Test Adequacy of Agent Harness in the Wild (P0841) | Yifan Xiong, Jingyi Ge, Zhenpeng Chen, Yiling Lou | 2026 | HarnessTester; H-Bench | Measures test adequacy of the agent harness (the code around the LLM), not just the patch | Agent harness code in real systems | Less than half of LLM-dependent harness lines/branches covered; +75.95%/84.76% coverage gains; +69.89% mutation-score gain; 122 real harness bugs | Focused on harness code, not benchmark verifiers; Python/agent frameworks only; does not harden a benchmark | H-Bench released for future research; extend to more harnesses and languages |
+| SWE-bench Goes Live! (P0262) | Linghao Zhang et al. | 2025 | Live task collection pipeline; Docker per task | Continuously updated benchmark built from recent GitHub issues to reduce contamination | Repository-level Python repair | 1,319 tasks across 93 repositories; tasks post-date model training data | Still evaluates with human-written tests; live maintenance cost; no verifier strengthening | Sustain live updates; use as a contamination-resistant substrate |
+| Multi-SWE-bench: A Multilingual Benchmark for Issue Resolving (P0013) | Daoguang Zan et al. | 2025 | Multi-SWE-bench; Agentless, SWE-agent, OpenHands | Extends issue resolving to seven programming languages | Java, TypeScript, JavaScript, Go, Rust, C, C++ | 1,632 instances; 4,723 RL instances released; diagnostic analysis of failure modes | Test-based evaluation inherits the same weakness; most failures are fault-localization errors, not verifier gaps | Enable agents to solve harder tasks within limited interaction rounds |
+| SWE-bench: Can Language Models Resolve Real-World GitHub Issues? (P0434) | Carlos E. Jimenez et al. | 2024 | Docker harness; fail-to-pass and pass-to-pass tests | Defines the repository-level issue-resolution task and evaluation protocol | Python repositories (12) | 2,294 issues; reproducible execution; became the standard substrate | Treats human-written tests as ground truth; tests confirm the human fix rather than reject adversarial alternatives | Explore agent-based and tool-augmented methods rather than constrain future approaches |
+| Patch Correctness Assessment: A Survey (P0002) | Fei et al. | 2025 | Survey of correctness-assessment methods and datasets | Organizes the patch-overfitting problem and the methods proposed to detect it | Automated program repair | Names the mechanism behind test-passing-but-wrong patches; useful taxonomy | Survey, no new measurement; definitions and metrics are heterogeneous across the surveyed work | *Not stated* (survey) |
+
+## B. Reward hacking, specification gaming, and environment spoofing
+
+| Name of Paper | Authors | Year | Tools Used | About | Domain | Pros | Cons | Future Work |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Terminal Wrench: A Dataset of 331 Reward-Hackable Environments and 3,632 Exploit Trajectories (P0121) | Amit Bercovich et al. | 2026 | 331 hackable environments; 3,632 hack trajectories; 2,352 legitimate baselines; LLM monitors | Collects real exploits where terminal agents satisfy checks without doing the task | Terminal / OS agents | Large, reusable exploit corpus; exploits range from output spoofing to stack-frame introspection, stdlib patching, rootkit-style hijacking; monitor AUC 0.97 → 0.92 without chain-of-thought | Exploits are task-specific rather than harness-wide; dataset and monitoring, not a defense | Build defenses that generalize across tasks; improve monitoring without chain-of-thought |
+| Hack-Verifiable Environments: Towards Evaluating Reward Hacking at Scale (P0058) | Amit Roth, Ivan Bercovich, Yonathan Efroni | 2026 | HVE transformation pipeline | Converts disclosed environments into ones with detectable planted hacks | Agent environments | Turns hack detection into a scalable measurement paradigm; enables controlled experiments | Transformation is limited to environments that can be rewritten; does not itself prevent hacking | Expand coverage of environments and hack types; lower the cost of detection |
+| Hack-Verifiable Terminal Bench: Evaluating Reward Hacking in Terminal Tasks (P0071) | Amit Roth, Ivan Bercovich, Yonathan Efroni | 2026 | Harbor framework; Terminal Bench tasks and verifiers | Applies HVE to Terminal Bench and tests whether prompting mitigates known and unknown exploits | Terminal agents | Measures hacking rates across frontier models; tests "unknown unknown" exploits, not only known ones | Measurement and prompting only, not a hardened verifier; base tasks and verifiers are unchanged | Reuse released environments and traces; extend the protocol to new benchmarks |
+| Defining and Characterizing Reward Hacking (P0011) | Joar Skalse, Nikolaus Howe, Dmitrii Krasheninnikov, David Krueger | 2022 | Formal MDP analysis | Defines proxy hackability and asks when an unhackable proxy can exist | RL theory | Gives the formal basis for "any verifier can be gamed"; shows non-trivial unhackable proxies are severely constrained | Finite MDPs and Markov rewards only; the definition is strict and symmetric | Probabilistic/approximate hackability; limited optimization; infinite policy sets |
+| Inference-Time Reward Hacking in Large Language Models (P0019) | Hadi Khalaf et al. | 2025 | Best-of-n, Soft Best-of-n, Best-of-Poisson; HedgeTune | Shows the rise-then-decline pattern is inevitable for a broad class of inference-time optimizers; proposes hedging | Reward models / inference-time alignment | Theoretical characterization plus a practical calibration algorithm; explains why maximizing pass rate can reduce true quality | Requires black-box access to the true reward for calibration; not specific to code verifiers | Investigate reward grokking and its implications for hedging |
+| InfoRM: Mitigating Reward Hacking in RLHF via Information-Theoretic Reward Modeling (P0005) | Yuchun Miao et al. | 2024 | Variational information bottleneck reward model; Cluster Separation Index | Detects and mitigates reward overoptimization in RLHF | RLHF reward modeling | Works across 70M-7B reward models; CSI gives an overoptimization indicator | Only evaluated up to 7B; monitoring has latency and needs test-set inference; not code-specific | Scale to larger models; build real-time, lightweight overoptimization detection |
+| Beyond Rule-Based Mutation Testing: Test-Aware Mutant Generation Using Large Language Models (P0240) | Nils Kiele, Zainab Saad, Zirui Wang, Steve Drew, Samira Ebrahimi Kahou | 2026 | Five LLMs; HumanEval and MBPP; mutmut baseline | Prompts an LLM to generate a non-trivial mutant that passes the base tests | Unit-level code benchmarks | 87.7% (HumanEval) and 79.1% (MBPP) verified fault rate vs 12.2%/23.0% test-blind and 4.4%/5.7% mutmut | Function-level, not repository patches; no defender that synthesizes tests; mutant realism not established | Repository-scale mutants; study which prompts produce useful survivors |
+| Mutation Testing of Task-Scoped State Oracles in Software-Agent Benchmarks (P0906) | Shengyao Sun | 2026 | Deterministic mutation protocol for state-oracle evaluators | Calibrates executable evaluators used by stateful agent benchmarks | Stateful software-agent benchmarks | Official evaluators rejected 100 of 110 harmful mutations (90.9%, 95% CI 84.1-95.0%); preserved all 35 JSON-key-order variants | Single-author preprint; calibration only, no test synthesis; one family of state oracles | Cross-benchmark protocol; extend beyond state oracles |
+
+## C. Test and oracle synthesis
+
+| Name of Paper | Authors | Year | Tools Used | About | Domain | Pros | Cons | Future Work |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Escaping the Self-Repair Trap: Improving Test Oracle Generation via Dual-Context Awareness (P0191) | Kefan Li, Hongyue Yu, Yuan Yuan | 2026 | DCAware; non-iterative dual-context prompting | Shows that iterating until execution succeeds can produce easy-to-satisfy, weak oracles | Test oracle generation | Better fault revelation than iterative self-repair at lower compute; identifies the Self-Repair Trap | Method-level evaluation; not repository patches; no hardening loop | Model-specific prompting; focal methods with latent bugs; repository-level dependencies |
+| Understanding LLM-Driven Test Oracle Generation (P0192) | Adam Bodicoat, Gunel Jahangirova, Valerio Terragni | 2026 | Empirical study of prompts and context levels | Studies when LLM-generated oracles actually expose failures | Test oracle generation | Design guidance; shows regression oracles often encode implemented rather than intended behavior | No system or benchmark contribution; conclusions depend on the studied models | Richer context, such as including the test class or suite |
+| Mutation-Guided Unit Test Generation With a Large Language Model (P0847) | Guancheng Wang, Qinghua Xu, Lionel Briand, Kui Liu | 2026 | MUTGEN; mutation feedback in prompts | Feeds surviving mutants back to an LLM to generate tests that kill them | Unit-level Python test generation | Beats EvoSuite and vanilla prompting on mutation score across 204 subjects; shows 100% coverage can coexist with 4% mutation score | Function-level units; no repository patch or benchmark harness; suite size grows | Tailor feedback to hard-to-kill mutants; identify which operators benefit most |
+| PRIMG: Efficient LLM-driven Test Generation Using Mutant Prioritization (P1154) | Mohamed Salah Bouafif, Mohammad Hamdaqa, Edward Zulkoski | 2025 | Mutant-subsumption ML model; LLM test generation | Prioritizes useful surviving mutants before generating tests | Solidity smart contracts | Reduces suite size and overhead versus killing every mutant; incremental and adaptive | Only Solidity; limited project diversity | Extend to other languages and LLMs; broader evaluation |
+| Tratto: A Neuro-Symbolic Approach to Deriving Axiomatic Test Oracles (P1155) | Davide Molinelli et al. | 2025 | Neuro-symbolic oracle derivation | Derives axiomatic oracles from natural-language specifications | Specification-based testing | 73% accuracy, 72% precision, 61% F1, above symbolic and neural baselines | Axiomatic oracles only; does not harden benchmark suites or handle patch-level mutants | Generate concrete assertions and complete test cases |
+| TOGA: A Neural Method for Test Oracle Generation (P0516) | Elizabeth Dinella, Gabriel Ryan, Todd Mytkowicz, Shuvendu K. Lahiri | 2021 | Transformer oracle inference; EvoSuite | Infers exception and assertion oracles from focal-method context | Java unit testing | 33% accuracy gain, 96% overall accuracy; 57 real bugs found, 30 missed by other methods | Java only; method-level; learns from existing test behavior | Train on EvoSuite data; extend the released datasets |
+| CodeT: Code Generation with Generated Tests (P0546) | Bei Chen et al. | 2022 | LLM-generated tests; dual execution for solution selection | Uses generated tests to select among candidate solutions | Function-level code generation | pass@1 on HumanEval 65.8% (+18.8 absolute); consistent gains across models and benchmarks | Selection, not verifier hardening; generated tests share the model's happy-path bias | Tackle harder problems; improve test/solution de-duplication |
+| Learning to Solve and Verify: A Self-Play Framework for Code and Test Generation (P1124) | Zi Lin, Sheng Shen, Ilia Kulikov, Jingbo Shang | 2025 | Sol-Ver; self-play solver-verifier; Llama 3.1 8B | Jointly trains one model to generate code and tests | Function-level code and test generation | +19.63% code generation and +17.49% test generation relative improvement; addresses error accumulation in self-training | Small model; synthetic data; not benchmark-level verification | Better scoring functions; controlled input generation |
+| Nexus: Execution-Grounded Multi-Agent Test Oracle Synthesis (P1146) | (multi-author, 2025) | 2025 | Multi-agent oracle synthesis; seven benchmarks | Synthesizes oracles grounded in execution | Function-level non-regression testing | LiveCodeBench oracle accuracy 46.30% → 57.73% for GPT-4.1-Mini; improves downstream bug detection | Oracle accuracy, not repository patch verification; no hardening gate | Extend to repository-scale and adversarial verification |
+| Knowledge-Guided Synthetic Bug Feedback for LLM-Based Unit Test Generation (P0956) | (2026) | 2026 | Real-bug mechanism retrieval; synthetic-bug feedback | Uses retrieved real-bug mechanisms as synthetic bugs to guide iterative test improvement | Unit test generation on Defects4J | Beats execution-, coverage-, mutation-, knowledge-, and search-based baselines on real-bug detection | Method-level; Defects4J only; no agent-benchmark evaluation | Extend the feedback loop to repository-level patches |
+| Correct Tests Are Not Enough: Measuring and Training Oracle Conversion in Specification-Based Test Generation (P0870) | Yunhao Liang et al. | 2026 | TC-Bench; GRPO training | Separates test correctness from oracle conversion (whether a test kills faulty code) | Specification-based test generation | Shows the two objectives need not improve together; trains models to improve oracle conversion | Training study; not a verifier-hardening system | Better training signals for oracle conversion |
+| AssertionBench: A Benchmark to Evaluate Large-Language Models for Assertion Generation (P1194) | Vaishnavi Pulavarthi, Deeksha Nandal, Soham Dan, Debjit Pal | 2024 | AssertionBench; 100 hardware designs | Benchmarks LLM assertion generation for hardware verification | Hardware (Verilog/SystemVerilog) | Quantitative benchmark; shows large room for improvement | Hardware domain, not Python repository benchmarks | Add VHDL/SystemC designs and assertions |
+
+## D. Mutation and oracle foundations
+
+| Name of Paper | Authors | Year | Tools Used | About | Domain | Pros | Cons | Future Work |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Are mutants a valid substitute for real faults in software testing? (P0555) | René Just, Darioush Jalali, Laura Inozemtseva, Michael D. Ernst | 2014 | Empirical study across real-fault benchmarks | Tests whether mutation scores predict real-fault detection | Mutation testing theory | Foundational evidence that mutants are a defensible proxy in aggregate | Aggregate result, not per-mutant validity; older Java benchmarks; metadata-only in this corpus | *Not stated in the indexed record* |
+| The Oracle Problem in Software Testing: A Survey (P0553) | Earl T. Barr, Mark Harman, Phil McMinn, Muzammil Shahbaz | 2015 | Survey | Defines the oracle problem and surveys approaches | Software testing theory | Canonical definition; explains why test generation is not oracle generation | Pre-LLM; no empirical benchmark | *Not stated in the indexed record* |
+| Coverage is not strongly correlated with test suite effectiveness (P0554) | Laura Inozemtseva, Reid Holmes | 2014 | Empirical study of coverage vs fault detection | Tests whether higher coverage implies better fault detection | Test adequacy | Blocks the "high coverage means strong verifier" argument once suite size is controlled | Older Java systems; metadata-only here; correlation, not causation | *Not stated in the indexed record* |
+| Large Language Models for Multi-Lingual Equivalent Mutant Detection: An Extended Empirical Study (P0239) | Honglin Shu, Zhao Tian, Dong Wang, Junji Yu | 2026 | 3,302 Java and 1,088 C mutant pairs; fine-tuned code embeddings | Benchmarks LLM-based equivalent-mutant detection | Mutation testing | Higher F1 than evaluated traditional methods; cross-lingual evaluation | Java and C only; equivalent-mutant detection remains costly and imperfect | Dynamically typed languages; leverage LLM reasoning |
+| Demonstrating specification gaming in reasoning models (P1015) | Alexander Bondarenko, Denis Volk, Dmitrii Volkov, Jeffrey Ladish | 2025 | Gameable tasks; reasoning and chat models | Shows models hack benchmarks by default under realistic prompts | Specification gaming | Direct behavioural evidence; improves on prior work by avoiding excessive nudging | Not code benchmarks; judge prompts need manual checks | Improve judge prompts; release and extend the evaluation suite |
+
+## E. Security of generated code
+
+| Name of Paper | Authors | Year | Tools Used | About | Domain | Pros | Cons | Future Work |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| SecCodePRM: A Process Reward Model for Code Security (P0116) | Weichen Yu, Ravi Mangal, Yinyi Luo, Kai Hu | 2026 | Step-level security process reward model | Scores each step of a code trajectory for security | Secure code generation | Outperforms prior methods in three settings while preserving functional correctness | Primarily C/C++/Python; not a verifier synthesizer; reward model, not execution gate | Generalize to other languages and paradigms |
+| Beyond Bypass: Measuring Vulnerability Regression in LLM-Generated Security Patches (P0052) | Yasmeen Rawajfih, Adiba Mahmud, Ross Arnold | 2026 | Differential static analysis; 479 C/C++ functions; eight CWE types | Asks whether AI-written security patches introduce new weaknesses | Code security | Separates bypass testing from regression; provides a measurement protocol | Static analysis only; C/C++; no dynamic exploit validation or test hardening | Extend to dynamic validation and broader languages |
+
+## Comparison at a glance
+
+This matrix records what each system actually implements and reports. "Yes" means the capability
+
+is implemented and reported. "Partial" means it is implemented under a narrower scope.
+
+| Capability | Probe to Generate (P0120) | UTBoost (P0001) | SWE-ABS (P0837) | MUTGEN / PRIMG (P0847/P1154) | Terminal Wrench (P0121) | AAVS (target) |
+| --- | --- | --- | --- | --- | --- | --- |
+| Mutates the reference patch | Yes (semantic variants) | No | Yes (synthesized wrong patches) | Yes (function-level mutants) | No | Yes (AST operator families) |
+| Detects survivors on the original suite | Yes | Yes | Yes | Yes | No | Yes |
+| Synthesizes new tests against survivors | Yes | Yes | Yes | Yes | No | Yes |
+| Soundness gate: gold patch must still pass | Yes (three-way filter) | Yes | Yes | Partial | n/a | Yes, explicit |
+| Completeness gate: mutant must fail | Yes | Yes | Yes | Partial | n/a | Yes, explicit |
+| Re-evaluates public leaderboard patches | Partial | Yes | Partial | No | No | Yes (FPFR) |
+| Container / state / exit-code hacks | No | No | No | No | Yes (measurement) | Yes (Stage 2) |
+| Released per-task hardened suite with provenance | No | Partial | No | No | Yes (exploits) | Target |
+Reading of the table. The attacker → survivor → synthesizer loop is *not* new. Probe to
+
+Generate (2026) already closes it at the test-suite level, and SWE-ABS does it with a different
+
+generator. What this review did not find as a single system is: (1) a model-agnostic, released
+
+hardened suite with per-task provenance; (2) one protocol that reports both false passes and
+
+false rejections (soundness) on the gold patch; (3) the same gate applied to AST-level and
+
+container/state-level gaming. Those three are the defensible contribution. See
+
+[STATE_OF_THE_FIELD.md](STATE_OF_THE_FIELD.md).
+
+6. TWENTY PAPERS TO READ FIRST
+
+
+1. P0120. Probe to Generate: Program Variant-Guided Test Augmentation for Repository-Level Repair Benchmarks. Closest methodological prior: variant-guided test augmentation on SWE-bench.
+
+2. P0001. UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench. Public-patch re-evaluation; 345 false passes and ranking changes.
+
+3. P0837. SWE-ABS: Adversarial Benchmark Strengthening Exposes Inflated Success Rates on Test-based Benchmark. Independent adversarial strengthening; top score falls from 78.80% to 62.20%.
+
+4. P0121. Terminal Wrench: A Dataset of 331 Reward-Hackable Environments and 3,632 Exploit Trajectories. 331 hackable terminal environments and 3,632 exploit trajectories.
+
+5. P0841. Complex Agents, Shallow Tests: Demystifying and Enhancing Test Adequacy of Agent Harness in the Wild. The agent harness itself is undertested.
+
+6. P0191. Escaping the Self-Repair Trap: Improving Test Oracle Generation via Dual-Context Awareness. Shows that iterative self-repair can weaken test oracles.
+
+7. P0564. The SWE-Bench Illusion: When State-of-the-Art LLMs Remember Instead of Reason. Separates memorization from reasoning on SWE-bench.
+
+8. P0034. SWE-Bench Pro V2: A Cleaner, Harder-to-Game Coding Benchmark. What it takes to maintain a coding benchmark over time.
+
+9. P0071. Hack-Verifiable Terminal Bench: Evaluating Reward Hacking in Terminal Tasks. Environment-level reward-hacking measurement protocol.
+
+10. P0002. Patch Correctness Assessment: A Survey. Survey of patch overfitting and correctness assessment.
+
+11. P0011. Defining and Characterizing Reward Hacking. Formal definition of reward hacking and proxy hackability.
+
+12. P0052. Beyond Bypass: Measuring Vulnerability Regression in LLM-Generated Security Patches. Vulnerability regression in AI-generated security patches.
+
+13. P0116. SecCodePRM: A Process Reward Model for Code Security. Step-level security reward modeling for code.
+
+14. P0434. SWE-bench: Can Language Models Resolve Real-World GitHub Issues? The original SWE-bench task definition and harness.
+
+15. P0013. Multi-SWE-bench: A Multilingual Benchmark for Issue Resolving. Multilingual issue-resolving benchmark.
+
+16. P0262. SWE-bench Goes Live! Live-updatable benchmark that reduces contamination risk.
+
+17. P0553. The Oracle Problem in Software Testing: A Survey. The oracle problem, defined.
+
+18. P0555. Are mutants a valid substitute for real faults in software testing? Evidence that mutants are valid substitutes for real faults.
+
+19. P0554. Coverage is not strongly correlated with test suite effectiveness. Coverage is not strongly correlated with test effectiveness.
+
+20. P0019. Inference-Time Reward Hacking in Large Language Models. Inference-time reward hacking and hedging.
+
+
+7. CLUSTER REVIEW
+
+
+The C10 section includes four papers that also appear in C5, because sandbox and state-integrity work is cross-cutting. The detailed review therefore contains 99 entries covering 95 unique papers. The appendix counts each paper once.
+
+
+7.1 C1: Benchmark test inadequacy and false passes
+
+
+This cluster contains the direct audits. The common finding is that repository tests are under-constrained, but the papers use different units. Probe to Generate works with program variants that survive the original tests and then generates targeted tests; on SWE-bench Verified, 77% of instances admit at least one surviving variant (P0120). UTBoost generates tests for real Python projects and re-evaluates public patches; it finds 345 erroneous patches and reports 40.9% and 24.4% effects on Lite and Verified leaderboard entries (P0001). SWE-ABS uses coverage-driven and mutation-driven strengthening; it strengthens 50.2% of instances and rejects 19.71% of previously passing patches (P0837).
+
+
+Two adjacent results widen the problem. The SWE-Bench Illusion shows that memorization can explain part of the performance gap (P0564), and Complex Agents, Shallow Tests shows that harness code is itself undertested (P0841). Taken together, these papers support the premise that outcome tests are weak, but they do not support a single merged percentage. The missing piece is a common protocol that reports surviving variants, false passes, and false rejections with the same denominator.
+
+
+Core papers
+
+
+P0263. SPICE: An Automated SWE-Bench Labeling Pipeline for Issue Clarity, Test Coverage, and Effort Estimation
+
+Authors: Gustavo A. Oliva, Gopi Krishnan Rajbahadur, Aaditya Bhatia, Haoxiang Zhang, Yihao Chen, Zhilong Chen, et al.
+
+Year and venue: 2025, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary (from the abstract): High-quality labeled datasets are crucial for training and evaluating foundation models in software engineering, but creating them is often prohibitively expensive and labor-intensive. We introduce SPICE, a scalable, automated pipeline for labeling SWE-bench-style datasets with annotations for issue clarity, test coverage, and effort estimation. To support the community, we release both SPICE tool and SPICE Bench, a new dataset of 6,802 SPICE-labeled instances curated from 291 open-source projects in SWE-Gym (over 13x larger than SWE-bench Verified). SPICE achieves strong agreement with human-labeled SWE-bench Verified data while reducing the cost of labeling 1,000 instances from around $100,000 (manual annotation) to just $5.10. These results demonstrate SPICE's potential to enable cost-effective, large-scale dataset creation for SE-focused FMs.
+
+Limitation: The dataset is relatively small (500 instances), all 12 projects are written in Python, and empirical evidence suggests that newer models were trained with SWE-bench data and have memorized issue-fix pairs [55] (SPICE can be used to create fresh datasets and mitigate the risks of benchmark data leakage during pre-training). Other research studies have recently flagged additional data quality issues in SWE-V [18]. For instance, Wang et al.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2507.09108 ; https://doi.org/10.1109/ase63991.2025.00192. Local PDF: papers/pdf/arxiv_2507.09108.pdf
+
+
+P0387. HumanEval Pro and MBPP Pro: Evaluating Large Language Models on Self-invoking Code Generation
+
+Authors: Zhaojian Yu, Yilun Zhao, Arman Cohan, Xiao-Ping Zhang
+
+Year and venue: 2024, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary (from the abstract): We introduce self-invoking code generation, a new task designed to evaluate the progressive reasoning and problem-solving capabilities of LLMs. First, we propose a general recipe for generating more challenging versions of existing benchmarks, resulting in three new benchmarks: HumanEval Pro, MBPP Pro, and BigCodeBench-Lite Pro, specifically designed to assess LLMs on self-invoking code generation. For example, o1-mini achieves 96.2% pass@1 on HumanEval but only 76.2% on HumanEval Pro. (ii) On self-invoking code generation task, the instruction-tuned models demonstrate only marginal improvements compared to the base models.
+
+Limitation: In this paper, we present HumanEval Pro and MBPP Pro, a series of benchmarks evaluate LLMs on self-invoking code generation task. One limitation is that the programming languages of our benchmarks only includes Python due to the intrinsic limitation of original HumanEval and MBPP.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2412.21199. Local PDF: papers/pdf/arxiv_2412.21199.pdf
+
+
+P0535. LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code
+
+Authors: Naman Jain, King Han, Alex Gu, Wen-Ding Li, Fanjia Yan, Tianjun Zhang, et al.
+
+Year and venue: 2024, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary (from the abstract): Large Language Models (LLMs) applied to code-related applications have emerged as a prominent field, attracting significant interest from both academia and industry. In this work, we propose LiveCodeBench, a comprehensive and contamination-free evaluation of LLMs for code, which continuously collects new problems over time from contests across three competition platforms, namely LeetCode, AtCoder, and CodeForces. We present empirical findings on contamination, holistic performance comparisons, potential overfitting in existing benchmarks as well as individual model comparisons. However, as new and improved LLMs are developed, existing evaluation benchmarks (e.g., HumanEval, MBPP) are no longer sufficient for assessing their capabilities.
+
+Limitation: However, as new and improved LLMs are developed, existing evaluation benchmarks (e.g., HumanEval, MBPP) are no longer sufficient for assessing their capabilities.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2403.07974. Local PDF: papers/pdf/arxiv_2403.07974.pdf
+
+
+P0536. BigCodeBench: Benchmarking Code Generation with Diverse Function Calls and Complex Instructions
+
+Authors: Terry Yue Zhuo, Minh Chien Vu, Jenny Chim, Han Hu, Wenhao Yu, Ratnadira Widyasari, et al.
+
+Year and venue: 2024, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary (from the abstract): Task automation has been greatly empowered by the recent advances in Large Language Models (LLMs) via Python code, where the tasks ranging from software engineering development to general-purpose reasoning. Fulfilling both of these characteristics can pose a great challenge for LLMs.To assess how well LLMs can solve challenging and practical tasks via programs, we introduce BigCodeBench, a benchmark that challenges LLMs to invoke multiple function calls as tools from 139 libraries and 7 domains for 1,140 fine-grained tasks. In addition, we propose a natural-language-oriented variant of BigCodeBench.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2406.15877. Local PDF: papers/pdf/arxiv_2406.15877.pdf
+
+
+P0543. CrossCodeEval: A Diverse and Multilingual Benchmark for Cross-File Code Completion
+
+Authors: Yangruibo Ding, Zijian Wang, Wasi Uddin Ahmad, Hantian Ding, Ming Tan, Nihal Jain, et al.
+
+Year and venue: 2023, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary (from the abstract): Code completion models have made significant progress in recent years, yet current popular evaluation datasets, such as HumanEval and MBPP, predominantly focus on code completion tasks within a single file. To fill in this gap, we propose CrossCodeEval, a diverse and multilingual code completion benchmark that necessitates an in-depth cross-file contextual understanding to complete the code accurately. To create examples that strictly require cross-file context for accurate completion, we propose a straightforward yet efficient static-analysis-based approach to pinpoint the use of cross-file context within the current.
+
+Limitation: However, despite such improvements, the pinnacle of performance remains notably unattained even with the highest-performing model, indicating that CrossCodeEval is also capable of assessing model's capability in leveraging extensive context to make better code completion.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2310.11248. Local PDF: papers/pdf/arxiv_2310.11248.pdf
+
+
+P0546. CodeT: Code Generation with Generated Tests
+
+Authors: Bei Chen, Fengji Zhang, Anh Nguyen, Daoguang Zan, Zeqi Lin, Jian-Guang Lou, et al.
+
+Year and venue: 2022, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary (from the abstract): The task of generating code solutions for a given programming problem can benefit from the use of pre-trained language models such as Codex, which can produce multiple diverse samples. In this paper, we propose a novel method, CodeT, that leverages the same pre-trained language models to automatically generate test cases for the code samples, thus reducing the human effort and increasing the coverage of the test scenarios. We conduct comprehensive experiments on four benchmarks, HumanEval, MBPP, APPS and CodeContests, using five different pre-trained language models with varying sizes.
+
+Key numbers: For instance, CodeT improves the pass@1 metric on HumanEval to 65.8%, which represents an absolute improvement of 18
+
+Limitation: However, a major challenge for this task is to select the most appropriate solution from the multiple samples generated by the pre-trained language models.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2207.10397. Local PDF: papers/pdf/arxiv_2207.10397.pdf
+
+
+P0554. Coverage is not strongly correlated with test suite effectiveness
+
+Authors: Laura Inozemtseva, Reid Holmes
+
+Year and venue: 2014, Proceedings of the 36th International Conference on Software Engineering
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: core
+
+Summary: No abstract was available in the indexed metadata; the title and source are recorded for completeness.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://doi.org/10.1145/2568225.2568271
+
+
+P0564. The SWE-Bench Illusion: When State-of-the-Art LLMs Remember Instead of Reason
+
+Authors: Shanchao Liang, Spandan Garg, Roshanak Zilouchian Moghaddam
+
+Year and venue: 2025, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: strong
+
+Summary (from the abstract): As large language models (LLMs) become increasingly capable and widely adopted, benchmarks play a central role in assessing their practical utility. In this work, we introduce two diagnostic tasks: file path identification from issue descriptions alone and ground truth function reproduction with only the current file context and issue description to probe models' underlying knowledge. We present empirical evidence that performance gains on SWE-Bench-Verified may be partially driven by memorization rather than genuine problem-solving. We show that state-of-the-art models achieve up to 76% accuracy in identifying buggy file paths using only issue descriptions, without access to repository structure. This performance is merely up to 53% on tasks from repositories not included in SWE-Bench, pointing to possible data contamination or memorization.
+
+Limitation: However, current evaluation protocols may overstate these models' true capabilities.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2506.12286 ; https://doi.org/10.1145/3786583.3786882. Local PDF: papers/pdf/arxiv_2506.12286.pdf
+
+
+P0841. Complex Agents, Shallow Tests: Demystifying and Enhancing Test Adequacy of Agent Harness in the Wild
+
+Authors: Yifan Xiong, Jingyi Ge, Zhenpeng Chen, Yiling Lou
+
+Year and venue: 2026, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: strong
+
+Summary (from the abstract): LLM-based agentic systems are emerging as a new software paradigm. Modern agents are typically composed of backbone LLMs and a surrounding harness that serves as the operational software infrastructure for agent execution. In this work, we conduct the first empirical study to systematically investigate the test adequacy of harness in real-world agentic systems. As agent harnesses grow increasingly complex, agents suffer from diverse harness implementation bugs, raising substantial reliability concerns. Our evaluation shows that HarnessTester substantially outperforms state-of-the-art general-purpose test generation techniques in achieving 75.95%/84.76% larger line/branch coverage gains and 69.89% larger mutation-score gains. These results highlight the practical.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2610.04921. Local PDF: papers/pdf/arxiv_2610.04921.pdf
+
+
+P1617. Automated Benchmark Auditing for AI Agents and Large Language Models
+
+Authors: Junlin Wang, Federico Bianchi, Shang Zhu, Fan Nie, Yongchan Kwon, Bhuwan Dhingra, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C1, Benchmark test inadequacy and false passes
+
+Priority: contextual
+
+Summary (from the abstract): Modern AI benchmarks operate at a complexity that outpaces traditional verification methods. We introduce Auto Benchmark Audit (ABA), an agentic framework that systematically audits individual benchmark tasks, uncovering issues such as hidden environment dependencies, specification gaps, and limited grading logic. We release the agentic tool and all task annotations to support the future development of frontier benchmarks. Across this corpus, ABA identifies critical issues including ambiguous task design, execution environment conflicts, and incorrect ground truths in over 25.7% of the evaluated tasks. Crucially, we demonstrate that these problematic tasks severely distorts capability assessments for agents and LLMs: filtering out these tasks with issues shifts model rankings and increases average performance on SWE-bench Verified.
+
+Limitation: Tasks authored by domain experts often contain implicit assumptions, incomplete environment specifications, and brittle evaluation logic that human annotation cannot reliably catch.
+
+Why it matters: Quantifies false-pass and test-adequacy risk; supplies the MSR baseline and motivates adversarial verifier hardening.
+
+Source: https://arxiv.org/abs/2605.26079. Local PDF: papers/pdf/arxiv_2605.26079.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.2 C2: Vulnerability regression and secure AI code
+
+
+Vulnerability detection is the most mature part of this cluster. The corpus contains surveys, deep-learning detectors, and secure-code benchmarks such as RealSec-bench and SafeGenBench. SecCodePRM adds a step-level security reward model that can score partial code and rank candidate continuations (P0116). These papers are useful context for a security-invariant completeness gate.
+
+
+The narrower claim, that AI-generated patches introduce new vulnerabilities, is less settled in this corpus. Beyond Bypass is directly about vulnerability regression (P0052), but the indexed record has no abstract, so its numbers are not verified here. The security cluster should therefore be read as a set of detection and scoring methods, not as proof of a specific regression rate. A longitudinal study with CWE deltas and a sound baseline is still needed.
+
+
+Core papers
+
+
+P0003. Modern Approaches to Software Vulnerability Detection: A Survey of Machine Learning, Deep Learning, and Large Language Models
+
+Authors: Md. Shazzad Hossain Shaon, Mst Shapna Akter
+
+Year and venue: 2025, Electronics
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Software vulnerabilities pose significant risks to the security and reliability of modern systems, making automated vulnerability detection an essential research area. In this survey, we present a comprehensive review of Machine Learning (ML), Deep Learning (DL), and Large Language Models (LLMs) techniques for vulnerability detection. Unlike previous studies, the present work explores learning paradigms from ML to LLMs using comprehensive evaluation criteria that highlight analytical capability, feature interpretability, and code-context comprehension. By combining these factors, our study addresses the methodological gap between classic feature-based approaches and current LLM-driven reasoning frameworks, providing beneficial insights to develop.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://doi.org/10.3390/electronics14224449
+
+
+P0018. Source code vulnerability detection based on deep learning: a review
+
+Authors: Huading Su, Zhen Xu, Yan Zhang, Qian Tan
+
+Year and venue: 2026, Cybersecurity
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Source code vulnerability detection is a crucial aspect of software security development, and the current use of Large Language Models (LLMs) accelerates not only software development but also the generation and propagation of code vulnerabilities. The distinction between this review and the preceding reviews: This study investigates the literature of the last four years; Not only does it contain datasets, but also includes model-related research and an analysis of multiple different application scenarios. This paper primarily systematizes and summarises deep learning-based source code vulnerability detection, as well as analyzes and anticipates current challenges and future research directions in this area. It's more current and comprehensive than most previous reviews of this type.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://doi.org/10.1186/s42400-025-00518-7
+
+
+P0023. Vulnerability Detection Using Two-Stage Deep Learning Models
+
+Authors: Mohamed Mjd Alhafi, Mohammad Hammade, Khloud Al Jallad
+
+Year and venue: 2023, 2023, Journal of Current Trends in Computer Science Research(JCTCSR)
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Application security is an essential part of developing modern software, as lots of attacks depend on vulnerabilities in software. On the other side, researchers have been interested in developing an AI-based vulnerability detection system employing deep learning models like BERT, BLSTM, etc. The number of attacks is increasing globally due to technological advancements. Results show an accuracy of 99% for the first and 98% for the second stage.
+
+Limitation: However, these approaches have substantial false-positive and false-negative rates.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://arxiv.org/abs/2305.09673 ; https://doi.org/10.33140/jctcsr. Local PDF: papers/pdf/arxiv_2305.09673.pdf
+
+
+P0029. Research on Software Vulnerability Detection Methods Based on Deep Learning
+
+Authors: Jiayuan Zhu
+
+Year and venue: 2024, Journal of Computing and Electronic Information Management
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): This paper aims to investigate software vulnerability detection methods based on deep learning to address the ever-growing challenges in software security. The deep learning-based software vulnerability detection method offers new insights and tools for addressing current software security challenges. By evaluating and improving existing deep learning models, a novel deep learning-based vulnerability detection framework is proposed, with its workflow and technical principles elaborated. The proposed deep learning-based vulnerability detection method can effectively enhance the accuracy and efficiency of software vulnerability detection, reduce reliance on expert knowledge, and lower human resource costs.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://doi.org/10.54097/q1rgkx18. Local PDF: papers/pdf/doi_10.54097_q1rgkx18.pdf
+
+
+P0052. Beyond Bypass: Measuring Vulnerability Regression in LLM-Generated Security Patches
+
+Authors: Yasmeen Rawajfih, Adiba Mahmud, Ross Arnold
+
+Year and venue: 2026, 2026 IEEE International Conference on Artificial Intelligence Testing (AITest)
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Automated vulnerability repair with large language models is increasingly woven into security workflows, yet evaluation practice has focused almost entirely on a single question: does the patch eliminate the targeted weakness? Bypass testing and regression measurement are orthogonal properties, and neglecting the latter leaves a material blind spot in any assessment of patch quality.This paper presents an empirical study of vulnerability regression in LLM-generated security patches, applying differential static analysis to 479 complete C/C++ functions spanning eight CWE types. Patches are generated from three frontier models alongside deve.
+
+Limitation: However, an equally important question has received little systematic attention: has the patching act itself introduced new weaknesses into the function being repaired?
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://doi.org/10.1109/aitest70988.2026.00029
+
+
+P0053. CHARGE: Leveraging CWE Hierarchies for Hardware Security SystemVerilog Assertion Generation
+
+Authors: Xiao Tan, Cynthia Sturton
+
+Year and venue: 2026, arXiv
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): This paper presents CHARGE, an automated framework for generating security properties for unverified RTL modules using CWEs and large language models (LLMs). We evaluate the framework on the Hack@DAC18, 19, and 21 open source SoC designs using OpenAI's GPT-4.1. The hallmark is a reasoning process that leverages the hierarchical nature of CWE entries to improve accuracy when identifying security-critical assets in unverified RTL modules. As a result, the approach can infer expected security behaviors and generate properties from identified assets and CWE semantics, avoiding the need for trusted design specifications and reducing manual engineering effort. For Hack@DAC21.
+
+Key numbers: For Hack@DAC21 OpenPiton SoC, 89% of the generated SVAs run in Cadence JasperGold FPV, and 92
+
+Limitation: Of our framework. 6.5 6.4.1 Commonality of failure cases. Our evaluation covered 20 unique CWEs. The 15 undetected bugs are mapped to 7 unique CWEs: 4 bugs are mapped to CWE-1220, 2 bugs are mapped to CWE-1245, 2 bugs are mapped to CWE-1189, 2 bugs are mapped to CWE-1262, 3 bugs are mapped to CWE-1281, 1 bug is mapped to CWE-1244, and 1 bug is mapped to CWE-1310.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://arxiv.org/abs/2607.27776. Local PDF: papers/pdf/arxiv_2607.27776.pdf
+
+
+P0116. SecCodePRM: A Process Reward Model for Code Security
+
+Authors: Weichen Yu, Ravi Mangal, Yinyi Luo, Kai Hu, Jingxuan He, Corina S. Pasareanu, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Large Language Models are rapidly becoming core components of modern software development workflows, yet ensuring code security remains challenging. We propose SecCodePRM, a security-oriented process reward model that assigns a context-aware, step-level security score along a code trajectory. Empirically, SecCodePRM outperforms prior approaches in all three settings, while preserving code functional correctness, suggesting improved security without a safety-utility tradeoff.
+
+Limitation: That present opportunities for future research. SecCodePRM is trained primarily on C, C++, and Python datasets, and while PreciseBugs includes additional languages (Go, Rust, JVM-based), the generalization to other programming languages and paradigms (e.g., functional languages, domain-specific languages) remains underexplored.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://arxiv.org/abs/2602.10418. Local PDF: papers/pdf/arxiv_2602.10418.pdf
+
+
+P0144. RealSec-bench: A Benchmark for Evaluating Secure Code Generation in Real-World Repositories
+
+Authors: Yanlin Wang, Ziyao Zhang, Chong Wang, Xinyi Xu, Mingwei Liu, Yong Wang, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Large Language Models (LLMs) have demonstrated remarkable capabilities in code generation, but their proficiency in producing secure code remains a critical, under-explored area. To address this gap, we introduce RealSec-bench, a new benchmark for secure code generation meticulously constructed from real-world, high-risk Java repositories. Using RealSec-bench, we conduct an extensive empirical study on 5 popular LLMs. We find that while Retrieval-Augmented Generation (RAG) techniques can improve functional correctness, they provide negligible benefits to security.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://arxiv.org/abs/2601.22706 ; https://doi.org/10.18653/v1/2026.findings-acl.1786. Local PDF: papers/pdf/arxiv_2601.22706.pdf
+
+
+P0155. An Empirical Evaluation of LLM-Generated Code Security Across Prompting Methods
+
+Authors: Mohammed Kharma, Ahmed Sabbah, Mohammad Alkhanafseh, Mohammad Hammoudeh, David Mohaisen
+
+Year and venue: 2026, arXiv
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): The growing use of Large Language Models (LLMs) for automated code generation has enhanced software development efficiency, but often at the cost of security. To investigate this problem, we present a comprehensive empirical evaluation of the security quality of LLM-generated code across five LLMs and four programming languages (Java, C++, C, and Python), examining the impact of multiple prompt engineering methods. We introduce a weaknesses-aware zero-shot chain-of-thought (WA-0CoT) prompting strategy that enriches prompts with security context using CWE mappings to guide.
+
+Limitation: However, prompting strategies, including WA-0CoT, systematically influence the compositional distribution of CWE categories, with effects varying by programming language.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://arxiv.org/abs/2605.24298. Local PDF: papers/pdf/arxiv_2605.24298.pdf
+
+
+P0328. Think Broad, Act Narrow: CWE Identification with Multi-Agent Large Language Models
+
+Authors: Mohammed Sayagh, Mohammad Ghafari
+
+Year and venue: 2025, arXiv
+
+Cluster: C2, Vulnerability regression and secure AI code
+
+Priority: core
+
+Summary (from the abstract): Machine learning and Large language models (LLMs) for vulnerability detection has received significant attention in recent years. We propose a novel multi-agent LLM approach to address the challenges of identifying CWEs. A preliminary evaluation of our approach shows promising results. We further evaluated the full pipeline on ten synthetic programs and found that incorporating context information significantly reduced false positives from 6 to 9 CWEs to just 1 to 2, while still correctly identifying the true CWE in 9 out of 10 cases.
+
+Limitation: Unfortunately, state-of-the-art techniques show that LLMs are unsuccessful in even distinguishing the vulnerable function from its benign counterpart, due to three main problems: Vulnerability detection requires deep analysis, which LLMs often struggle with when making a one-shot prediction.
+
+Why it matters: Supplies vulnerability-regression evidence; motivates the Completeness gate and security-invariant assertions.
+
+Source: https://arxiv.org/abs/2508.01451. Local PDF: papers/pdf/arxiv_2508.01451.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.3 C3: Reward hacking and specification gaming
+
+
+Reward hacking has a formal foundation. Skalse et al. define hackability and show that non-trivial unhackable proxies are severely constrained (P0011). Empirical work then shows what this looks like in practice. Terminal Wrench releases 331 environments, 3,632 hack trajectories, and 2,352 legitimate baselines; its monitorability study reports an AUC drop from 0.97 to 0.92 when chain-of-thought is removed (P0121). The HVE and HVTB papers turn embedded hacks into a measurement protocol (P0058, P0071).
+
+
+A second strand studies reward overoptimization in language models. InfoRM uses an information bottleneck and a Cluster Separation Index to detect overoptimization (P0005). Inference-Time Reward Hacking shows the characteristic rise-then-decline pattern and proposes hedging (P0019). The cluster is strong on measurement and weak on a general defense. No paper here provides a task-agnostic verifier that handles both code and container state.
+
+
+Core papers
+
+
+P0005. InfoRM: Mitigating Reward Hacking in RLHF via Information-Theoretic Reward Modeling
+
+Authors: Yuchun Miao, Sen Zhang, Liang Ding, Rong Bao, Lefei Zhang, Dacheng Tao
+
+Year and venue: 2024, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Despite the success of reinforcement learning from human feedback (RLHF) in aligning language models with human values, reward hacking, also termed reward overoptimization, remains a critical challenge. Inspired by this finding, we propose the Cluster Separation Index (CSI), which quantifies deviations in the IB latent space, as an indicator of reward overoptimization to facilitate the development of online mitigation strategies. Extensive experiments on a wide range of settings and RM scales (70M, 440M, 1.4B, and 7B) demonstrate the effectiveness of InfoRM.
+
+Limitation: Our study presents several avenues for future research. Firstly, while our evaluation includes models up to 7 billion parameters, scaling our InfoRM framework to state-of-the-art models that are orders of magnitude larger remains an exciting and unexplored direction.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2402.09345 ; https://doi.org/10.52202/079017-4270. Local PDF: papers/pdf/arxiv_2402.09345.pdf
+
+
+P0011. Defining and Characterizing Reward Hacking
+
+Authors: Joar Skalse, Nikolaus Howe, Dmitrii Krasheninnikov, David Krueger
+
+Year and venue: 2022, Advances in Neural Information Processing Systems 35
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): We provide the first formal definition of reward hacking, a phenomenon where optimizing an imperfect proxy reward function leads to poor performance according to the true reward function. We say that a proxy is unhackable if increasing the expected proxy return can never decrease the expected true return. Intuitively, it might be possible to create an unhackable proxy by leaving some terms out of the reward function (making it "narrower") or overlooking fine-grained distinctions between roughly equivalent outcomes, but we show this is usually not the case.
+
+Limitation: Our work has a number of limitations. We have only considered finite MDPs and Markov reward functions, leaving more general environments for future work. While we characterized hackability and simplification for finite policy sets, the conditions for simplification are somewhat opaque, and our characterization of infinite policy sets remains incomplete. As previously discussed, our definition of hackability is strict, arguably too strict.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2209.13085 ; https://doi.org/10.52202/068431-0687. Local PDF: papers/pdf/arxiv_2209.13085.pdf
+
+
+P0014. Reward Hacking in Reinforcement Learning and RLHF: A Multidisciplinary Examination of Vulnerabilities, Mitigation Strategies, and Alignment Challenges
+
+Authors: Tiechuan Hu, Wenbo Zhu, Yuqi Yan
+
+Year and venue: 2025, 2025 5th Intelligent Cybersecurity Conference (ICSC)
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Reinforcement Learning (RL) agents optimize policies based on provided rewards, yet may exploit unintended loopholes in the reward design, a phenomenon known as reward hacking. With the rise of Reinforcement Learning from Human Feedback (RLHF), this issue has gained new urgency, especially in large language models (LLMs) where subtle misalignments between the reward model and true human intentions can produce outputs that superficially meet criteria while failing to embody authentic correctness or values. Beyond technical solutions, we also consider ethical and societal implications. By integrating insights from multiple sectors, we highlight a path toward more reliably aligned AI systems that genuinely uphold human values.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://doi.org/10.1109/icsc65596.2025.11140447
+
+
+P0019. Inference-Time Reward Hacking in Large Language Models
+
+Authors: Hadi Khalaf, Claudio Mayrink Verdun, Alex Oesterling, Himabindu Lakkaraju, Flavio du Pin Calmon
+
+Year and venue: 2025, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): A common paradigm to improve the performance of large language models is optimizing for a reward model. We study this phenomenon under Best-of-$n$ (BoN) and Soft Best-of-$n$ (SBoN), and we introduce Best-of-Poisson (BoP) that provides an efficient, near-exact approximation of the optimal reward-KL divergence policy at inference time. To counter this effect, we introduce HedgeTune, an efficient algorithm to find the optimal inference-time parameter. By overoptimizing for a misspecified reward, we can subvert intended alignment goals and reduce overall performance, a phenomenon commonly referred to as reward hacking. We show that the characteristic pattern of hacking as observed in practice (where the true reward first increases before declining) is an inevitable property of a broad class of inference-time mechanisms, including BoN and BoP. We demonstrate that.
+
+Limitation: However, reward models are never perfect.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2506.19248 ; https://doi.org/10.52202/085713-2064. Local PDF: papers/pdf/arxiv_2506.19248.pdf
+
+
+P0020. Reward Hacking Mitigation using Verifiable Composite Rewards
+
+Authors: Mirza Farhan Bin Tarek, Rahmatollah Beheshti
+
+Year and venue: 2025, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Reinforcement Learning from Verifiable Rewards (RLVR) has recently shown that large language models (LLMs) can develop their own reasoning without direct supervision. To mitigate these, we introduce a composite reward function with specific penalties for these behaviors. However, applications in the medical domain, specifically for question answering, are susceptible to significant reward hacking during the reasoning phase. This approach marks a step toward reducing reward hacking and enhancing the reliability of models utilizing RLVR.
+
+Limitation: However, applications in the medical domain, specifically for question answering, are susceptible to significant reward hacking during the reasoning phase.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2509.15557 ; https://doi.org/10.1145/3765612.3767230. Local PDF: papers/pdf/arxiv_2509.15557.pdf
+
+
+P0054. Mitigating Reward Hacking in RLHF via Bayesian Non-negative Reward Modeling
+
+Authors: Zhibin Duan, Guowei Rong, Zhuo Li, Bo Chen, Mingyuan Zhou, Dandan Guo
+
+Year and venue: 2026, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Reward models learned from human preferences are central to aligning large language models (LLMs) via reinforcement learning from human feedback, yet they are often vulnerable to reward hacking due to noisy annotations and systematic biases such as response length or style. We propose Bayesian Non-Negative Reward Model (BNRM), a principled reward modeling framework that integrates non-negative factor analysis into Bradley-Terry (BT) preference model. To scale BNRM to modern LLMs, we develop an amortized variational inference network conditioned on deep model representations, allowing efficient end-to-end training. Extensive empirical results demonstrate that BNRM substantially mitigates reward over-optimization, improves robustness under distribution shifts, and yields more interpretable reward decompositions than strong baselines.
+
+Limitation: Of reinforcement learning from human feedback. arXiv preprint arXiv:2307.15217, 2023. Gao, L., Schulman, J., and Hilton, J. Scaling laws for reward model overoptimization. In International Conference on Machine Learning, pp. 10835-10866. PMLR, 2023. Chen, L., Zhu, C., Soselia, D., Chen, J., Zhou, T., Goldstein, T., Huang, H., Shoeybi, M., and Catanzaro, B. Odin: Disentangled reward mitigates hacking in rlhf. arXiv preprint arXiv:2402.07319, 2024.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2602.10623. Local PDF: papers/pdf/arxiv_2602.10623.pdf
+
+
+P0055. Directional Alignment Mitigates Reward Hacking in Reinforcement Learning for Language Models
+
+Authors: Wenlong Deng, Jiaji Huang, Kaan Ozkara, Yushu Li, Christos Thrampoulidis, Xiaoxiao Li, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Reward hacking arises when a model improves a proxy reward by exploiting shortcuts rather than solving the intended task. Motivated by this observation, we introduce trusted-direction projection, which constrains gradients to remain within a clean reference subspace. We analyze this drift through dominant singular directions of parameter updates and show that reward-hacking runs exhibit substantially larger directional change than clean runs. Across reward-hacking experiments on mathematical reasoning, the proposed approach delays shortcut exploitation and better preserves task performance.
+
+Limitation: Constructing a perfect reward model is inherently difficult, particularly for complex reasoning tasks where the true objective is only partially specified. Strong regularization can also constrain the model's ability to learn beyond the reference policy.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2605.25189. Local PDF: papers/pdf/arxiv_2605.25189.pdf
+
+
+P0058. Hack-Verifiable Environments: Towards Evaluating Reward Hacking at Scale
+
+Authors: Amit Roth, Ankur Samanta, Matan Halevy, Yoav Levine, Yonathan Efroni
+
+Year and venue: 2026, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Aligning autonomous agents with human intent remains a central challenge in modern AI. In this work, we introduce a new evaluation paradigm for measuring reward hacking. Using this benchmark, we analyze reward hacking behavior across language models in diverse environments and settings. We open source the code at https://github.com/MajoRoth/hack-verifiable-environments/.
+
+Limitation: And Future Work Limitations Our work focuses on transforming disclosed environments into hack-verifiable environments in a generic way, though several limitations remain. (i) While the logical bug idea is generalizable, its concrete implementation must be adapted to each environment individually. (ii) Our approach also assumes a clean base environment and is therefore not well-suited for complex environments with pre-existing bugs.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2605.20744. Local PDF: papers/pdf/arxiv_2605.20744.pdf
+
+
+P0069. Reward Hacking in the Era of Large Models: Mechanisms, Emergent Misalignment, Challenges
+
+Authors: Xiaohua Wang, Muzhao Tian, Yuqi Zeng, Zisu Huang, Jiakang Yuan, Bowen Chen, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): Reinforcement Learning from Human Feedback (RLHF) and related alignment paradigms have become central to steering large language models (LLMs) and multimodal large language models (MLLMs) toward human-preferred behaviors. In this survey, we propose the Proxy Compression Hypothesis (PCH) as a unifying framework for understanding reward hacking. We further organize detection and mitigation strategies according to how they intervene on compression, amplification, or co-adaptation dynamics. By framing reward hacking as a structural instability of proxy-based alignment under scale, we highlight open challenges in scalable oversight, multimodal grounding, and agentic autonomy.
+
+Limitation: However, these approaches introduce a systemic vulnerability: reward hacking, where models exploit imperfections in learned reward signals to maximize proxy objectives without fulfilling true task intent.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2604.13602. Local PDF: papers/pdf/arxiv_2604.13602.pdf
+
+
+P0071. Hack-Verifiable Terminal Bench: Evaluating Reward Hacking in Terminal Tasks
+
+Authors: Amit Roth, Ivan Bercovich, Yonathan Efroni
+
+Year and venue: 2026, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): As agents grow more capable and autonomous, their tendency to reward hack, satisfying a task's checks while violating its intent, becomes an increasingly important failure mode. We release all environments and agent traces at https://majoroth.github.io/hack-verifiable-environments/hvtb Using HVTB, we measure reward-hacking rates across frontier models and study whether prompts with varying amounts of information on the hack can mitigate this behavior. This lets us test whether prompting can prevent not only known reward-hacking strategies, but also 'unknown unknown' exploits that the prompt does not anticipate.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2608.22103. Local PDF: papers/pdf/arxiv_2608.22103.pdf
+
+
+P0121. Terminal Wrench: A Dataset of 331 Reward-Hackable Environments and 3,632 Exploit Trajectories
+
+Authors: Ivan Bercovich, Ivgeni Segal, Kexun Zhang, Shashwat Saxena, Aditi Raghunathan, Ziqian Zhong
+
+Year and venue: 2026, arXiv
+
+Cluster: C3, Reward hacking and specification gaming
+
+Priority: core
+
+Summary (from the abstract): We release Terminal Wrench, a subset of 331 terminal-agent benchmark environments, copied from the popular open benchmarks that are demonstrably reward-hackable. The tasks span system administration, machine learning, software engineering, and security challenges; the exploits range from simple output spoofing to stack-frame introspection, standard-library patching, and rootkit-style binary hijacking. The data set includes 3,632 hack trajectories and 2,352 legitimate baseline trajectories across three frontier models (Claude Opus 4.6, Gemini 3.1 Pro, GPT-5.4). We also present a monitorability study in which hack trajectories are sanitized or stripped of reasoning traces and then scored by an LLM judge, showing that detection degrades meaningfully when chain-of-thought is removed (AUC drops from 0.97 to 0.92).
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Documents reward hacking / specification gaming; feeds the Layer-2 taxonomy and sandbox/state defenses.
+
+Source: https://arxiv.org/abs/2604.17596. Local PDF: papers/pdf/arxiv_2604.17596.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.4 C4: Test and verifier synthesis with execution feedback
+
+
+This is the defender's cluster. The strongest warning is DCAware's Self-Repair Trap: optimizing execution success can make oracles easier to satisfy and less fault-revealing (P0191). The oracle-generation study by Bodicoat et al. reaches a compatible conclusion: many generated oracles encode implemented behavior rather than intended behavior (P0192). AssertionBench and ChatUniTest provide benchmarks and baselines for assertion and test generation (P1194, P1292).
+
+
+The test-quality literature explains why more tests are not enough. Coverage is not strongly correlated with fault detection once suite size is controlled (P0554), while assertion strength is a better signal. The practical implication is that a synthesized test should be judged by what it kills and by whether it rejects valid alternative implementations, not by whether it runs successfully.
+
+
+Core papers
+
+
+P0191. Escaping the Self-Repair Trap: Improving Test Oracle Generation via Dual-Context Awareness
+
+Authors: Kefan Li, Hongyue Yu, Yuan Yuan
+
+Year and venue: 2026, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): Large Language Models (LLMs) have shown strong potential for regression-oracle completion, where a test prefix is given and the current program version is treated as expected behavior. To address this issue, we propose DCAware, a computationally efficient, non-iterative framework that prioritizes high signal-to-noise contextual grounding over multi-round repair. Recent approaches increasingly rely on iterative self-repair and execution feedback, but optimizing execution success does not necessarily yield strong fault-revealing oracles. Extensive experiments based on execution and mutation testing show that DCAware consistently improves fault-revealing effectiveness while maintaining high execution success, outperforming prior methods with substantially lower computational.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2608.05917 ; https://doi.org/10.1145/3832783.3834421. Local PDF: papers/pdf/arxiv_2608.05917.pdf
+
+
+P0192. Understanding LLM-Driven Test Oracle Generation
+
+Authors: Adam Bodicoat, Gunel Jahangirova, Valerio Terragni
+
+Year and venue: 2026, Proc. 2nd ACM/IEEE International Conference on AI-powered Software (AIware 2025), 2025
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): Automated unit test generation aims to improve software quality while reducing the time and effort required for creating tests manually. Our findings offer insights into the strengths and limitations of LLM-based oracle generation in the FM era, improving our understanding of their capabilities and fostering future research in this area.
+
+Limitation: However, existing techniques primarily generate regression oracles that predicate on the implemented behavior of the class under test.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2601.05542 ; https://doi.org/10.1109/aiware69974.2025.00011. Local PDF: papers/pdf/arxiv_2601.05542.pdf
+
+
+P0337. SATORI: Static Test Oracle Generation for REST APIs
+
+Authors: Juan C. Alonso, Alberto Martin-Lopez, Sergio Segura, Gabriele Bavota, Antonio Ruiz-Cortés
+
+Year and venue: 2025, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): REST API test case generation tools are evolving rapidly, with growing capabilities for the automated generation of complex tests. This paper introduces SATORI (Static API Test ORacle Inference), a black-box approach for generating test oracles for REST APIs by analyzing their OpenAPI Specification. SATORI achieved an F1-score of 74.3%, outperforming the state-of-the-art dynamic approach AGORA+ (69.3%)-which requires executing the API-when generating comparable oracle types. Moreover, our findings show that static and dynamic oracle inference methods are complementary: together, SATORI and AGORA+ found 90% of the oracles in our annotated ground-truth dataset.
+
+Limitation: However, despite their strengths in test data generation, these tools are constrained by the types of test oracles they support, often limited to crashes, regressions, and noncompliance with API specifications or design standards.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2508.16318. Local PDF: papers/pdf/arxiv_2508.16318.pdf
+
+
+P0401. TOGLL: Correct and Strong Test Oracle Generation with LLMs
+
+Authors: Soneya Binta Hossain, Matthew Dwyer
+
+Year and venue: 2024, 2025 IEEE/ACM 47th International Conference on Software Engineering (ICSE), 2025, 1475-1487
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): Test oracles play a crucial role in software testing, enabling effective bug detection. In this research, we present the first comprehensive study to investigate the capabilities of LLMs in generating correct, diverse, and strong test oracles capable of effectively identifying a large number of unique bugs. Utilizing the most effective fine-tuned LLM and prompt pair, we introduce TOGLL, a novel LLM-based method for test oracle generation. Moreover, our findings demonstrate that TOGLL is capable of generating significantly diverse test oracles.
+
+Limitation: It can detect 1,023 unique bugs that EvoSuite cannot, which is ten times more than what the previous SOTA neural-based method, TOGA, can detect.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2405.03786 ; https://doi.org/10.1109/icse55347.2025.00098. Local PDF: papers/pdf/arxiv_2405.03786.pdf
+
+
+P0419. GenX: Mastering Code and Test Generation with Execution Feedback
+
+Authors: Nan Wang, Yafei Liu, Chen Chen, Haonan Lu
+
+Year and venue: 2024, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): Recent advancements in language modeling have enabled the translation of natural language into code, and the use of execution feedback to improve code generation. In this work, we propose a novel approach that concurrently trains a code generation model and a test generation model, utilizing execution feedback to refine and enhance the performance of both. We introduce two strategies for test and code data augmentation and a new scoring function for code and test ranking. The results demonstrate that our models, when iteratively trained with an increasing number of test cases and code solutions, outperform those trained on the original dataset.
+
+Limitation: However, these methods often rely heavily on pre-existing test cases, which may not always be available or comprehensive.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2412.13464. Local PDF: papers/pdf/arxiv_2412.13464.pdf
+
+
+P0420. FuzzAug: Data Augmentation by Coverage-guided Fuzzing for Neural Test Generation
+
+Authors: Yifeng He, Jicheng Wang, Yuyang Rong, Hao Chen
+
+Year and venue: 2024, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): Testing is essential to modern software engineering for building reliable software. In this paper, we present a novel data augmentation technique, FuzzAug, that introduces the benefits of fuzzing to large language models by introducing valid testing semantics and providing diverse coverage-guided inputs. Given the high costs of manually creating test cases, automated test case generation, particularly methods utilizing large language models, has become increasingly popular. Doubling the size of training datasets, FuzzAug improves the performance from the baselines significantly. This technique demonstrates the potential of introducing prior knowledge from dynamic software analysis to improve neural test generation.
+
+Limitation: However, the diversity and volume of unit tests in current datasets are limited, especially for newer but important languages.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2406.08665 ; https://doi.org/10.18653/v1/2025.findings-emnlp.847. Local PDF: papers/pdf/arxiv_2406.08665.pdf
+
+
+P0421. Doc2OracLL: Investigating the Impact of Documentation on LLM-based Test Oracle Generation
+
+Authors: Soneya Binta Hossain, Raygan Taylor, Matthew Dwyer
+
+Year and venue: 2024, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: core
+
+Summary (from the abstract): Code documentation is a critical aspect of software development, serving as a bridge between human understanding and machine-readable code. While prior research has utilized Javadoc comments in test oracle generation (TOG), there has not been a thorough investigation into their impact when combined with other contextual information, nor into identifying the most relevant components for generating correct and strong test oracles, or understanding their role in detecting real bugs. In this study, we dive deep into investigating the impact of Javadoc commen.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2412.09360. Local PDF: papers/pdf/arxiv_2412.09360.pdf
+
+
+P0870. Correct Tests Are Not Enough: Measuring and Training Oracle Conversion in Specification-Based Test Generation
+
+Authors: Yunhao Liang, Chengguang Gan, Ruixuan Ying, Hanjun Wei, Zhe Cui, Shiwen Ni
+
+Year and venue: 2026, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: strong
+
+Summary (from the abstract): Generating tests from a natural-language specification requires both an input that exposes faulty behavior and a correct expected output. These requirements need not improve together: a model can increase test correctness by choosing easier inputs, or discover useful inputs whose expected outputs it cannot predict. On an audited TC-Bench split with 506 training and 142 evaluation tasks, three independently trained Qwen3.5-9B runs at step 75 increase full-test correctness from 28.59% to 42.54%, input kill from 24.06% to 25.27%, and effective full.
+
+Limitation: These requirements need not improve together: a model can increase test correctness by choosing easier inputs, or discover useful inputs whose expected outputs it cannot predict.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2609.05879. Local PDF: papers/pdf/arxiv_2609.05879.pdf
+
+
+P1194. AssertionBench: A Benchmark to Evaluate Large-Language Models for Assertion Generation
+
+Authors: Vaishnavi Pulavarthi, Deeksha Nandal, Soham Dan, Debjit Pal
+
+Year and venue: 2024, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: strong
+
+Summary (from the abstract): Assertions have been the de facto collateral for simulation-based and formal verification of hardware designs for over a decade. In this paper, we present AssertionBench, a novel benchmark to evaluate LLMs' effectiveness for assertion generation quantitatively. We use AssertionBench to compare state-of-the-art LLMs to assess their effectiveness in inferring functionally correct assertions for hardware designs. Our experiments demonstrate how LLMs perform relative to each other, the benefits of using more in-context exemplars in generating a higher fraction of functionally correct assertions, and the significant room for improvement for LLM-based assertion generators.
+
+Limitation: However, there is little effort to quantitatively establish the effectiveness and suitability of various LLMs for assertion generation.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2406.18627. Local PDF: papers/pdf/arxiv_2406.18627.pdf
+
+
+P1292. ChatUniTest: A Framework for LLM-Based Test Generation
+
+Authors: Yinghao Chen, Zehao Hu, Chen Zhi, Junxiao Han, Shuiguang Deng, Jianwei Yin
+
+Year and venue: 2023, arXiv
+
+Cluster: C4, Test and verifier synthesis with execution feedback
+
+Priority: strong
+
+Summary (from the abstract): Unit testing is an essential yet frequently arduous task. Various automated unit test generation tools have been introduced to mitigate this challenge. This paper presents ChatUniTest, an LLM-based automated unit test generation framework. Our effectiveness evaluation reveals that ChatUniTest outperforms TestSpark and EvoSuite in half of the evaluated projects, achieving the highest overall line coverage.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Methodological prior for test/verifier synthesis and execution feedback; informs the delta-V generator and dual gate.
+
+Source: https://arxiv.org/abs/2305.04764. Local PDF: papers/pdf/arxiv_2305.04764.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.5 C5: Coding agents and repository benchmarks
+
+
+This cluster supplies the evaluation substrates. SWE-bench defines the task and harness with 2,294 issues across 12 Python repositories (P0434). Multi-SWE-bench extends the format to seven languages with 1,632 instances (P0013). SWE-bench Live provides 1,319 tasks across 93 repositories and a live-update pipeline (P0262). SWE-Bench Pro V2 repaired or retired 480 of 731 tasks and reports a hardened protocol that blocks upstream fix retrieval (P0034). SWE-smith and DeepSWE add scale and long-horizon multi-language tasks.
+
+
+The cluster also shows why benchmark maintenance is experimental work. The SWE-Bench Illusion (P0564), the leaderboard profiling study (P0269), and the harness-adequacy study (P0841) all change how a score should be interpreted. A verifier-hardening paper cannot treat the benchmark as a fixed, neutral instrument.
+
+
+Core papers
+
+
+P0001. UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench
+
+Authors: Boxi Yu, Yuxuan Zhu, Pinjia He, Daniel Kang
+
+Year and venue: 2025, ACL 2025
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): The advent of Large Language Models (LLMs) has spurred the development of coding agents for real-world code generation. To address this challenge, we introduce UTGenerator, an LLM-driven test case generator that automatically analyzes codebases and dependencies to generate test cases for real-world Python projects. Building on UTGenerator, we propose UTBoost, a comprehensive framework for test case augmentation. These corrections, impacting 40.9% of SWE-Bench Lite and 24.4% of SWE-Bench Verified leaderboard entries, yield 18 and 11 ranking changes, respectively.
+
+Limitation: However, the manually written test cases included in these pull requests are often insufficient, allowing generated patches to pass the tests without resolving the underlying issue.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2506.09289 ; https://doi.org/10.18653/v1/2025.acl-long.189. Local PDF: papers/pdf/arxiv_2506.09289.pdf
+
+
+P0013. Multi-SWE-bench: A Multilingual Benchmark for Issue Resolving
+
+Authors: Daoguang Zan, Zhirong Huang, Wei Liu, Hanwu Chen, Linhao Zhang, Shulin Xin, et al.
+
+Year and venue: 2025, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): The task of issue resolving is to modify a codebase to generate a patch that addresses a given issue. To address this, we introduce a multilingual issue-resolving benchmark, called Multi-SWE-bench, covering Java, TypeScript, JavaScript, Go, Rust, C, and C++. Based on Multi-SWE-bench, we evaluate a series of state-of-the-art models using three representative methods (Agentless, SWE-agent, and OpenHands) and present a comprehensive analysis with key empirical insights. It includes a total of 1,632 high-quality instances, which were carefully annotated from 2,456 candidates by 68 expert annotators, ensuring that the benchmark can provide an accurate and reliable evaluation. As an initial contribution, we release a set of 4,723 well-structured instances spanning seven programming languages, laying a solid foundation for RL research in this domain.
+
+Limitation: However, existing benchmarks, such as SWE-bench, focus almost exclusively on Python, making them insufficient for evaluating Large Language Models (LLMs) across diverse software ecosystems.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2504.02605 ; https://doi.org/10.52202/085713-2111. Local PDF: papers/pdf/arxiv_2504.02605.pdf
+
+
+P0034. SWE-Bench Pro V2: A Cleaner, Harder-to-Game Coding Benchmark
+
+Authors: Soham Dan, Jeff Da, Sanyam Bhutani, Miguel Romero Calvo, Ivan Guevara, Fernando Carabedo, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): SWE-Bench Pro is a widely used benchmark of long-horizon software engineering tasks for coding agents. We present SWE-Bench Pro V2, a revised public split built to keep the benchmark accurate as capabilities advance. We release the benchmark and distill lessons for maintaining agent benchmarks over time. As agents improve, they reach task issues earlier agents never touched and interact with the evaluation environment in ways the original harness did not anticipate. On the 642 V2 tasks frontier agents resolve up to 99.4% while other systems stay clearly separated, and a 51-task Hard split spreads systems from 52.9% to 98.0%.
+
+Limitation: A hardened protocol restricts network access to the model endpoint and re-grades every patch in a clean container, so agents cannot retrieve upstream fixes or get credit for changes outside their patch.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2610.24206. Local PDF: papers/pdf/arxiv_2610.24206.pdf
+
+
+P0035. SWE-Touch: Benchmarking Coding Agents When Users Touch the Code
+
+Authors: Yuqiao Tan, Jinxiang Meng, Fangyu Lei, Minzheng Wang, Shizhu He, Jun Zhao, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): Real-world software development requires coding agents to operate in shared workspaces where users may inspect and modify code during an ongoing task, yet existing repository-level benchmarks typically evaluate agents working alone or restrict user participation to messages. We introduce SWE-Touch, a framework that stress-tests this setting through validated Counter-Edits: plausible edits to task-relevant code that conflict with task completion. We evaluate nine coding models on SWE-bench Verified, with additional experiments on longer-horizon tasks from SWE-Bench Pro and DeepSWE. Counter-Edit lowers average resolve rate by 7.7 percentage points on SWE-bench Verified, with degradation also persisting on both longer-horizon benchmarks.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2608.02499. Local PDF: papers/pdf/arxiv_2608.02499.pdf
+
+
+P0036. SWE-Bench Pro Verified: A Reliable Benchmark for Software Engineering Agents
+
+Authors: Pujun Zheng, Zixin Shang, Shufan Jiang, Wenhui Tian, Dongsheng Zhu, Zerun Ma, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): SWE-Bench Pro has emerged as a standard benchmark for evaluating software engineering agents on challenging repository-level tasks. We present SWE-Bench Pro Verified, a verified version of SWE-Bench Pro that addresses both problems. Our approach combines anti-hacking safeguards that eliminate major leakage channels without disrupting normal agent functionality, with task refinement that minimally corrects inconsistencies within flawed instances. Evaluations on SWE-Bench Pro Verified reveal that some models perform substantially worse than previously evaluated, suggesting that existing results on SWE-Bench Pro may overestimate real software engineering capability. SWE-Bench Pro Verified offers a more trustworthy benchmark for assessing software engineering agents.
+
+Limitation: However, our analysis work show that its evaluation is undermined by two sources of unreliability: reward hacking, enabled by leakage of gold solutions or hidden evaluation information, and task quality issues, including misleading problem statements and improperly scoped tests.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2609.08149. Local PDF: papers/pdf/arxiv_2609.08149.pdf
+
+
+P0037. SWE-Bench ProMax: Benchmarking Agents on Large-Scale Multilingual Code Refactoring
+
+Authors: Yuling Shi, Jinghan Xu, Kelin Fu, Wenhao Zeng, Shilin He, Lei Zhang, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): As AI coding agents take on increasingly complex, long-horizon software engineering tasks, existing benchmarks are rapidly saturating and their evaluation quality has come under serious scrutiny: a recent audit found that nearly 60% of unsolved SWE-bench Verified instances contain flawed tests -- either overly narrow tests that reject correct solutions or overly broad tests that check unstated requirements --.
+
+Key numbers: Experiments with frontier models under two agent scaffolds show that the best model achieves only 41.2% resolve rate, confirming that SWE-Bench ProMax presents a meaningful and unsatu
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2608.09802. Local PDF: papers/pdf/arxiv_2608.09802.pdf
+
+
+P0038. PAIChecker: Uncovering and Checking PR-Issue Misalignment in SWE-Bench-Like Benchmarks
+
+Authors: Manyi Wang, Junjielong Xu, Pinjia He
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): SWE-bench-like benchmarks are widely used for evaluating LLM's issue resolution capability. To enable reliable and scalable construction of those benchmarks in the future, we propose PAIChecker, a multi-agent system for checking PR-Issue misalignment in SWE-bench-like benchmarks. In this work, we systematically study SWE-bench Verified instances, finding that 13.6% exhibit misalignment across five patterns in eleven fine-grained scenarios. Experiments on SWE-Gym and SWE-bench Multilingual show that PAIchecker achieves the best performance across all four LLM backbones, reaching up to 92.12% and 91.67% binary accuracy, respectively.
+
+Limitation: However, due to the inherent complexity of developing and maintaining large repositories, such PR-Issue pairings are often misaligned in practice.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2607.28587 ; https://doi.org/10.1145/3832783.3837557. Local PDF: papers/pdf/arxiv_2607.28587.pdf
+
+
+P0048. DeepSWE: Measuring Frontier Coding Agents on Original, Long-Horizon Engineering Tasks
+
+Authors: Wenqi Huang, Charley Lee, Leonard Tng, Serena Ge
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): DeepSWE is a benchmark of 113 original, long-horizon software engineering tasks for evaluating coding agents. We release the benchmark, its verifiers, and the full record of evaluation trajectories. When an independent LLM judge re-reviews graded runs, it disagrees with DeepSWE's verifier about an order of magnitude less often than with SWE-Bench Pro's inherited tests (1.4% versus 32.4%).
+
+Limitation: Most public agentic coding benchmarks follow SWE-bench in mining merged fixes from public GitHub repositories, which creates two problems: the fixes and their discussion were likely seen during pretraining, so a high score can reflect recall rather than problem-solving; and each task is graded by the tests that shipped with its merged fix, which were written.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2607.07946. Local PDF: papers/pdf/arxiv_2607.07946.pdf
+
+
+P0120. Probe to Generate: Program Variant-Guided Test Augmentation for Repository-Level Repair Benchmarks
+
+Authors: Chenglin Li, Yisen Xu, Zehao Wang, Shin Hwei Tan, Tse-Hsun, Chen
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): Test-based benchmarks such as SWE-bench have become a standard basis for evaluating automated issue resolution agents, deeming a patch correct if it passes a provided regression test suite. We present the framework, a test augmentation framework that uses semantically modified program variants as behavioral probes to identify and close gaps in benchmark test suites. On SWE-bench Verified, 77% of instances admit at least one surviving variant. the framework generates 1,014 validated tests across 211 instances, increasing patch-region line and branch coverage by 10.8 and 9.5 percentage points. Re-evaluating the top-10 repair agents with the augmented suites reduces resolved rates by 4.2%-9.0%, showing that many previously accepted patches exploit benchmark test gaps rather than fully.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2604.01518. Local PDF: papers/pdf/arxiv_2604.01518.pdf
+
+
+P0187. SideKernel: A Usable microVM Sandbox for AI Coding Agents on macOS
+
+Authors: Dimitrios Prasakis
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): AI coding agents are untrusted system components, yet they require autonomy on the developer machines they run on. I conducted a formative online user survey which indicates that fewer than 40% of AI coding agent users run their agents in a sandbox and identifies the top usability barriers hindering AI coding agent sandbox adoption.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2610.02456. Local PDF: papers/pdf/arxiv_2610.02456.pdf
+
+
+P0197. SWE-MiniSandbox: Container-Free Reinforcement Learning for Building Software Engineering Agents
+
+Authors: Danlong Yuan, Wei Wu, Enhan Zhao, Zhengren Wang, Xueliang Zhao, Huishuai Zhang, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): Reinforcement learning (RL) has become a key paradigm for training software engineering (SWE) agents, but existing pipelines typically rely on per-task containers for isolation. We propose SWE-MiniSandbox, a lightweight, container-free method that enables scalable RL training of SWE agents without sacrificing isolation. As a result, our approach lowers disk usage to approximately 5% of that required by container-based pipelines and reduces environment preparation time to about 25% of the container baseline. Instead of relying on per-instance containers, SWE-MiniSandbox executes each task in an isolated workspace backed by kernel-level mechanisms, substantially reducing system overhead. Empirical results demonstrate that SWE-MiniSandbox achieves evaluation performance comparable to standard container-based pipelines.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2602.11210. Local PDF: papers/pdf/arxiv_2602.11210.pdf
+
+
+P0262. SWE-bench Goes Live!
+
+Authors: Linghao Zhang, Shilin He, Chaoyun Zhang, Yu Kang, Bowen Li, Chengxing Xie, et al.
+
+Year and venue: 2025, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): The issue-resolving task, where a model generates patches to fix real-world bugs, has emerged as a critical benchmark for evaluating the capabilities of large language models (LLMs). In this work, we present SWE-bench-Live, a live-updatable benchmark designed to overcome these challenges. We evaluate a range of state-of-the-art agent frameworks and LLMs on SWE-bench-Live, revealing a substantial performance gap compared to static benchmarks like SWE-bench, even under controlled evaluation conditions. Our initial release consists of 1,319 tasks derived from real GitHub issues created since 2024, spanning 93 repositories.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2505.23419 ; https://doi.org/10.52202/085713-4923. Local PDF: papers/pdf/arxiv_2505.23419.pdf
+
+
+P0269. Dissecting the SWE-Bench Leaderboards: Profiling Submitters and Architectures of LLM- and Agent-Based Repair Systems
+
+Authors: Matias Martinez, Xavier Franch
+
+Year and venue: 2025, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): The rapid progress in Automated Program Repair (APR) has been driven by advances in AI, particularly large language models (LLMs) and agent-based systems. In this paper, we present the first comprehensive study of all submissions to the SWE-Bench Lite (79 entries) and Verified (99 entries) leaderboards, analyzing 80 unique approaches across dimensions such as submitter type, product availability, LLM usage, and system architecture. SWE-Bench is a recent benchmark designed to evaluate LLM-based repair systems using real issues and pull requests mined from 12 popular open-source Python repositories. Our findings reveal the dominance of proprietary LLMs (especially Claude 3.5), the presence of both agentic and non-agentic designs, and a contributor base spanning from individual developers to large tech companies.
+
+Limitation: However, because the submission process does not require detailed documentation, the architectural design and origin of many solutions remain unclear.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2506.17208. Local PDF: papers/pdf/arxiv_2506.17208.pdf
+
+
+P0273. SWE-smith: Scaling Data for Software Engineering Agents
+
+Authors: John Yang, Kilian Lieret, Carlos E. Jimenez, Alexander Wettig, Kabir Khandpur, Yanzhe Zhang, et al.
+
+Year and venue: 2025, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): Despite recent progress in Language Models (LMs) for software engineering, collecting training data remains a significant pain point. To address this pain point, we introduce SWE-smith, a novel pipeline for generating software engineering training data at scale. We train SWE-agent-LM-32B, achieving 40.2% Pass@1 resolve rate on the SWE-bench Verified benchmark, state of the art among open source models. Existing datasets are small, with at most 1,000s of training instances from 11 or fewer GitHub repositories. Given any Python codebase, SWE-smith constructs a corresponding execution environment, then automatically synthesizes 100s to 1,000s of task instances that break existing test(s) in the codebase.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2504.21798. Local PDF: papers/pdf/arxiv_2504.21798.pdf
+
+
+P0434. SWE-bench: Can Language Models Resolve Real-World GitHub Issues?
+
+Authors: Carlos E. Jimenez, John Yang, Alexander Wettig, Shunyu Yao, Kexin Pei, Ofir Press, et al.
+
+Year and venue: 2023, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): Language models have outpaced our ability to evaluate them effectively, but for their future development it is essential to study the frontier of their capabilities. To this end, we introduce SWE-bench, an evaluation framework consisting of $2,294$ software engineering problems drawn from real GitHub issues and corresponding pull requests across $12$ popular Python repositories. We find real-world software engineering to be a rich, sustainable, and challenging testbed for evaluating the next generation of language models.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2310.06770. Local PDF: papers/pdf/arxiv_2310.06770.pdf
+
+
+P0837. SWE-ABS: Adversarial Benchmark Strengthening Exposes Inflated Success Rates on Test-based Benchmark
+
+Authors: Boxi Yu, Yang Cao, Yuzhong Zhang, Liting Lin, Junjielong Xu, Zhiqing Zhong, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: strong
+
+Summary (from the abstract): The SWE-Bench Verified leaderboard is approaching saturation, with the top system achieving 78.80%. We present SWE-ABS, an adversarial framework that strengthens test suites through a two-stage pipeline: (1) coverage-driven augmentation using program slicing to target untested code regions, and (2) mutation-driven adversarial testing that synthesizes plausible but incorrect patches to expose semantic blind spots. However, we show that this performance is inflated. On SWE-Bench Verified (500 instances), SWE-ABS strengthens 50.2% of instances, a 25.1x improvement over prior work, and rejects 19.71% of previously passing patches. As a result, the top agent's score decreases from 78.80% to 62.20%, leading to significant leaderboard reshuffling, with the previous top-ranked agent dropping to fifth place.
+
+Limitation: However, we show that this performance is inflated.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2603.00520. Local PDF: papers/pdf/arxiv_2603.00520.pdf
+
+
+P0927. The Balkanization of Execution-Security Research for AI Coding Agents: Isolation, Access Control, and Time-of-Check-to-Time-of-Use Vulnerabilities
+
+Authors: Mohammadreza Rashidi
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: strong
+
+Summary (from the abstract): AI coding agents now read repositories, call tools, and execute shell commands with limited human oversight, and a fast-growing body of work studies whether the execution layer around them is actually safe. Papers on sandbox isolation, capability and access control, policy enforcement, time-of-check-to-time-of-use (TOCTOU) races, Model Context Protocol (MCP) threats, identity delegation, execution provenance, network egress control, and static analysis of agent-generated code are published independently and rarely cite one another. (2) Policy-enforcement studies report failure rates from 69% to 98% of real denylists, yet no isolation paper re-evaluates its own defense under that adversarial setting. (5) Benign but out-of-scope agent actions occurring at rates up to 17.1% under realistic prompting are addressed by no access-control or capability paper in the corpus.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2607.05743. Local PDF: papers/pdf/arxiv_2607.05743.pdf
+
+
+P1101. Fault-Tolerant Sandboxing for AI Coding Agents: A Transactional Approach to Safe Autonomous Execution
+
+Authors: Boyang Yan
+
+Year and venue: 2025, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: strong
+
+Summary (from the abstract): The transition of Large Language Models (LLMs) from passive code generators to autonomous agents introduces significant safety risks, specifically regarding destructive commands and inconsistent system states. This paper presents a Fault-Tolerant Sandboxing framework designed to mitigate these risks through a policy-based interception layer and a transactional filesystem snapshot mechanism. We hypothesize that wrapping agent actions in atomic transactions can guarantee safety with acceptable latency, outperforming the heavy initialization overhead of containers or the interactive friction of commercial CLIs. Experimental results demonstrate a 100% interception rate for high-risk commands and a 100% success rate in rolling back failed states.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2512.12806. Local PDF: papers/pdf/arxiv_2512.12806.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.6 C6: Mutation testing and oracle foundations
+
+
+The foundational papers in this cluster justify mutation testing and define its limits. Just et al. show that mutants are a valid substitute for real faults in the aggregate (P0555). The oracle survey by Barr et al. defines the oracle problem (P0553). The coverage study by Inozemtseva and Holmes shows that coverage alone is a weak measure (P0554).
+
+
+The applied papers in the cluster handle equivalent mutants with symbolic execution, machine learning, or LLM-based detection (P0032, P0239). The lesson for AAVS is that mutation score is not a single invariant. Any paper that reports a mutation score should state its operator set, its equivalence policy, and its treatment of timeouts.
+
+
+Core papers
+
+
+P0010. Test Suite Assessment of Safety-Critical Systems using Safety Tactics and Fault-Based Mutation Testing
+
+Authors: Havva Gulay Gurbuz, Bedir Tekinerdogan, Cagatay Catal, Nagehan Pala Er
+
+Year and venue: 2023, Wiley
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): A safety-critical system is a system in which the software malfunctioning could result in death, injury, or damage to the environment. We use a case study to evaluate the effectiveness of our approach using fault-injection techniques. We leverage fault-based testing, utilizing a dedicated metamodel and domain-specific language (DSL) to model safety views and their relation to the code. Our study shows that this systematic approach is feasible and effective for test suite assessment of safety-critical systems.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://doi.org/10.22541/au.167407897.71108405/v1
+
+
+P0021. Enhancing Mutation Testing Efficiency: A Comparative Study of Machine Learning Models for Equivalent Mutant Identification
+
+Authors: Terrence Pugh, Carlos Mina Lopez, Samuel Peacock, Lin Deng, Josh Dehlinger, Suranjan Chakraborty
+
+Year and venue: 2025, Software Testing, Verification and Reliability
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Mutation testing is a software quality assurance technique that introduces small changes (i.e., ‘mutants') into the code to help assess the effectiveness of test suites. Specifically, this research develops and compares a bidirectional GRU (Bi‐GRU) based RNN model, an Elman recurrent neural network (RNN) model and a long short‐term memory (LSTM) model, all based on the code representation of the abstract syntax tree (AST). A significant challenge of mutation testing is called the equivalent mutant problem, which leads to the very expensive cost of mutation testing, in terms of extensive manual work in the identification of equivalent mutants. The experimental results indicate that the proposed machine learning‐based approach can automatically classify equivalent mutants with an average F1‐Score of 87.4% across all three models.
+
+Key numbers: For each mutation operator, the best performing models achieve an average F1‐Score of 94% | The comparison results indicate our proposed AST‐based Bi‐GRU, LSTM and RNN models achieved the highest F1‐Scores, at 84.61%, 87
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://doi.org/10.1002/stvr.70004
+
+
+P0032. MutantDistiller: Using Symbolic Execution for Automatic Detection of Equivalent Mutants and Generation of Mutant Killing Tests
+
+Authors: Michael Baer, Norbert Oster, Michael Philippsen
+
+Year and venue: 2020, 2020 IEEE International Conference on Software Testing, Verification and Validation Workshops (ICSTW)
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Mutation testing can be used to measure the quality of a given test suite. But two flaws prevent wide acceptance. Despite the fact that detecting equivalent mutants is an undecidable problem in general, our fully automatic tool MutantDistiller correctly classifies all of them (13 equivalent, 239 non-equivalent). But it is too time-consuming to manually write all the required test cases.This paper shows how to use symbolic execution to tackle both problems, i.e., to detect equivalent mutants and exclude them from further analysis, and to automatically generate test cases that kill the remaining mutants.Our evaluation uses a set of 252 publicly available mutants for which it is known that they are hard to classify.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://doi.org/10.1109/icstw50294.2020.00055
+
+
+P0033. Equivalent mutant identification using hybrid wavelet convolutional rain optimization
+
+Authors: Kiran Jammalamadaka, Nikhat Parveen
+
+Year and venue: 2021, Software: Practice and Experience
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Mutation testing is a significant software testing approach that identifies the faults present in the source codes and the potentiality of the test cases in detecting the mutated codes. In this testing approach, equivalent mutant detection is complicated as the test cases will not identify the mutated codes from the source program. The dimensions of the features are reduced in the convolutional layers using the wavelet function, which enhances the classifier's performance. To improve the classification accuracy, the loss function is minimized with an adaptive rain optimization algorithm (ROA) that iteratively tunes the parameter of wCNN. The proposed approach is compared with the existing classification techniques based on the parameters such.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://doi.org/10.1002/spe.3038
+
+
+P0237. Hybrid Fault-Driven Mutation Testing for Python
+
+Authors: Saba Alimadadi, Golnaz Gharachorlu
+
+Year and venue: 2026, arXiv
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Mutation testing is an effective technique for assessing the effectiveness of test suites by systematically injecting artificial faults into programs. In this paper, we introduce a novel set of seven mutation operators that are inspired by prevalent anti-patterns in Python programs, designed to complement the existing general-purpose operators and broaden the spectrum of simulated faults. We propose a mutation testing technique that utilizes a hybrid of static and dynamic analyses to mutate Python programs based on these operators while minimizing equivalent.
+
+Limitation: However, existing mutation testing techniques fall short in capturing many types of common faults in dynamically typed languages like Python.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://arxiv.org/abs/2601.19088. Local PDF: papers/pdf/arxiv_2601.19088.pdf
+
+
+P0238. STMutants: A Mutation Testing Dataset for Structured Text Programs in Industrial Automation
+
+Authors: Md Humaun Kabir, Md Rakibul Islam, Helen H. Lou
+
+Year and venue: 2026, arXiv
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Mutation testing is widely used to evaluate test-suite effectiveness, yet IEC 61131-3 Structured Text (ST) programs still lack a publicly available benchmark that supports reproducible mutation-based research. To address this need, we present STMutants, a curated mutation testing dataset for industrial automation software. To demonstrate the usefulness of the dataset, we evaluate three large language models (LLMs) in a two-phase setting: test-suite generation followed by mutation kill/survive prediction. Across 108 retained mutants, the models achieve mutation detection accuracies of 86.1%, 94.4%, and 86.1%, respectively, with statistical analysis confirming significant performance differences.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://arxiv.org/abs/2606.05499. Local PDF: papers/pdf/arxiv_2606.05499.pdf
+
+
+P0239. Large Language Models for Multi-Lingual Equivalent Mutant Detection: An Extended Empirical Study
+
+Authors: Honglin Shu, Zhao Tian, Dong Wang, Junji Yu, Jiazhe Zhang, Xuejie Cao, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Mutation testing is a powerful technique for ensuring software quality. However, the presence of equivalent mutants introduces unnecessary costs and biases, limiting its practical effectiveness. This paper presents the first comprehensive empirical study on LLMs for EMD, using 3,302 Java and 1,088 C mutant pairs to benchmark against state-of-the-art methods, explore strategy variations, assess efficiency, and evaluate cross-lingual generalization. Experimental results show that LLM-based approaches achieve higher F1-scores than the evaluated traditional methods, with fine-tuned code embedding yielding the highest detection accuracy among the tested strategies.
+
+Limitation: However, the presence of equivalent mutants introduces unnecessary costs and biases, limiting its practical effectiveness.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://arxiv.org/abs/2607.00511. Local PDF: papers/pdf/arxiv_2607.00511.pdf
+
+
+P0553. The Oracle Problem in Software Testing: A Survey
+
+Authors: Earl T. Barr, Mark Harman, Phil McMinn, Muzammil Shahbaz, Shin Yoo
+
+Year and venue: 2015, IEEE Transactions on Software Engineering
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary (from the abstract): Testing involves examining the behaviour of a system in order to discover potential faults. Given an input for a system, the challenge of distinguishing the corresponding desired, correct behaviour from potentially incorrect behavior is called the "test oracle problem". All forms of test oracles, even the humble human, involve challenges of reducing cost and increasing benefit.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://doi.org/10.1109/tse.2014.2372785
+
+
+P0555. Are mutants a valid substitute for real faults in software testing?
+
+Authors: René Just, Darioush Jalali, Laura Inozemtseva, Michael D. Ernst, Reid Holmes, Gordon Fraser
+
+Year and venue: 2014, Proceedings of the 22nd ACM SIGSOFT International Symposium on Foundations of Software Engineering
+
+Cluster: C6, Mutation testing and oracle foundations
+
+Priority: core
+
+Summary: No abstract was available in the indexed metadata; the title and source are recorded for completeness.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Theoretical foundation for mutation operators, equivalent-mutant filtering, and oracle design.
+
+Source: https://doi.org/10.1145/2635868.2635929
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.7 C7: Reinforcement learning, verifiers and reward models
+
+
+This cluster connects verification to training. Process reward models score intermediate steps, and RLVR uses verifiable outcomes as reward. The papers here show that reward models are imperfect proxies. InfoRM detects overoptimization (P0005), and inference-time reward hacking shows that optimizing a proxy can reduce the true objective (P0019). Recent PRM work tries to make intermediate supervision more reliable (P0296, P0749).
+
+
+For AAVS, the relevant claim is not that PRMs are bad. It is that a verifier used as a reward signal must be tested adversarially. If the verifier can be satisfied by a shortcut, RL will find the shortcut. The code-specific version of that argument is still thin in this corpus and is a natural place for new experiments.
+
+
+Core papers
+
+
+P0026. RPM-MCTS: Knowledge-Retrieval as Process Reward Model with Monte Carlo Tree Search for Code Generation
+
+Authors: Yuanyuan Lin, Xiangyu Ouyang, Teng Zhang, Kaixin Sui
+
+Year and venue: 2025, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Tree search-based methods have made significant progress in enhancing the code generation capabilities of large language models. To tackle these problems, we propose RPM-MCTS, an effective method that utilizes Knowledge-Retrieval as Process Reward Model based on Monte Carlo Tree Search to evaluate intermediate algorithmic steps. Furthermore, our method utilizes sandbox execution feedback to locate erroneous algorithmic steps during generation, enabling timely and targeted corrections. However, due to the difficulty in effectively evaluating intermediate algorithmic steps and the inability to locate and timely correct erroneous steps, these methods often generate incorrect code and incur increased computational costs. Extensive experiments on four public code generation benchmarks demonstrate that RPM-MCTS outperforms current state-of-the-art methods while achieving an approximately 15% reduction.
+
+Limitation: However, due to the difficulty in effectively evaluating intermediate algorithmic steps and the inability to locate and timely correct erroneous steps, these methods often generate incorrect code and incur increased computational costs.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2511.19895 ; https://doi.org/10.1609/aaai.v40i38.40475. Local PDF: papers/pdf/arxiv_2511.19895.pdf
+
+
+P0103. STEP-VERIFIER: Learning to Verify Intermediate Agent Behavior with Process Reward Models
+
+Authors: Longhui Zhang, Xian Wu, Chunyuan Chen, Fen Huang, Bin Wang
+
+Year and venue: 2026, Springer Science and Business Media LLC
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Large language model agents complete tasks through long sequences of tool calls, yet most training signals only indicate whether the entire attempt succeeded. Our system, STEP-VERIFIER, scores each environment-observation and action pair instead of whole trajectories. Using Llama-3.1-8B-Instruct and Mistral-7B-Instruct backbones, STEP-VERIFIER outperforms training from final scores alone across GAIA, ToolBench, and AgentBoard, and its per-action scores align substantially better with human judgments than trajectory-level scoring baselines.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://doi.org/10.21203/rs.3.rs-11444038/v1
+
+
+P0115. FunPRM: Function-as-Step Process Reward Model with Meta Reward Correction for Code Generation
+
+Authors: Ruiyi Zhang, Peijia Qin, Qi Cao, Eric Xue, Pengtao Xie
+
+Year and venue: 2026, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Code generation is a core application of large language models (LLMs), yet LLMs still frequently fail on complex programming tasks. To address these challenges, we propose FunPRM. Given its success in mathematical reasoning, test-time scaling approaches such as Process Reward Model (PRM)-based Best-of-N selection offer a promising way to improve performance. Experiments on LiveCodeBench and BigCodeBench demonstrate that FunPRM consistently outperforms existing test-time scaling methods across five base LLMs, notably achieving state-of-the-art performance on LiveCodeBench when combined.
+
+Limitation: Code generation is a core application of large language models (LLMs), yet LLMs still frequently fail on complex programming tasks.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2601.22249. Local PDF: papers/pdf/arxiv_2601.22249.pdf
+
+
+P0117. The Weakest Link Tells It All: Outcome-Supervised Process Reward Modeling via Learnable Credit Assignment
+
+Authors: Tianyu Jia, Yue Fang, Hongxin Ding, Rihong Qiu, Zhibang Yang, Zhijing Wu, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Process reward models (PRMs) enhance the reasoning capabilities of large language models (LLMs) by providing fine-grained feedback, yet training PRMs typically requires expensive stepwise annotations. In this work, we propose Outcome-Supervised Process Reward Modeling via Learnable Credit Assignment (LCA), an outcome-supervised PRM framework that jointly learns credit assignment and reward modeling under the principle of Weakest Link Assignment: a reasoning chain is as strong as its weakest link. Extensive experiments demonstrate that LCA outperforms state-of-the-art outcome-supervised PRMs across multiple tasks and backbones.
+
+Limitation: Existing approaches rely on either uniform or causal assignment, both of which fail to anchor credit in step correctness and thus hinder process error identification.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2606.27739. Local PDF: papers/pdf/arxiv_2606.27739.pdf
+
+
+P0118. Unsupervised Process Reward Models
+
+Authors: Artyom Gadetsky, Maxim Kodryan, Siba Smarak Panigrahi, Hang Guo, Maria Brbic
+
+Year and venue: 2026, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Process Reward Models (PRMs) are a powerful mechanism for steering large language model reasoning by providing fine-grained, step-level supervision. Here, we propose a method for training unsupervised PRMs (uPRM) that requires no human supervision, neither at the level of step-by-step annotations nor through ground-truth verification of final answers. The key idea behind our approach is to define a scoring function, derived from LLM next-token probabilities, that jointly assesses candidate positions of first erroneous steps across a batch of reasoning.
+
+Key numbers: We demonstrate the effectiveness of uPRM across diverse scenarios: (i) uPRM achieves up to 15% absolute accuracy improvements over the LLM-as-a-Judge in identifying first err | (ii) as a verifier for test-time scaling, uPRM performs comparably to supervised PRMs and outperforms the majority voting baseline by up to 6.9%, and (iii) when used as a reward signal in reinforcement learning, uPRM enables
+
+Limitation: However, this effectiveness comes at a significant cost: PRMs require expert annotations for every reasoning step, making them costly and difficult to scale.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2605.10158. Local PDF: papers/pdf/arxiv_2605.10158.pdf
+
+
+P0119. Process Reward Modeling with Reliability- and Conservatism-Aware Bayesian Belief
+
+Authors: Zhongjian Qiao, Zhixiang Zhou, Jiafei Lyu, Peisong Wang, Qiaosheng Zhang, Siyang Gao, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Process Reward Models (PRMs) play a central role in test-time scaling for large language model (LLM) reasoning. To bridge this gap, we propose BayesianPRM, which treats the process reward as a random variable within a reward hypothesis space and maintains a Bayesian belief over it. However, PRMs may provide inaccurate process rewards for test-time scaling, which we identify as arising from two sources of uncertainty: (1) PRM uncertainty that arises from insufficient supervision data and imperfect PRM training; and (2) policy uncertainty that results from the mismatch between the policy to collect supervision data and the policy for test-time scaling, leading to systematic rewa.
+
+Limitation: However, PRMs may provide inaccurate process rewards for test-time scaling, which we identify as arising from two sources of uncertainty: (1) PRM uncertainty that arises from insufficient supervision data and imperfect PRM training; and (2) policy uncertainty that results from the mismatch between the policy to collect supervision data.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2610.23223. Local PDF: papers/pdf/arxiv_2610.23223.pdf
+
+
+P0184. Decoupling Reasoning and Confidence: Resurrecting Calibration in Reinforcement Learning from Verifiable Rewards
+
+Authors: Zhengzhao Ma, Xueru Wen, Boxi Cao, Yaojie Lu, Hongyu Lin, Jinglin Yang, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Reinforcement Learning from Verifiable Rewards (RLVR) significantly enhances large language models (LLMs) reasoning but severely suffers from calibration degeneration, where models become excessively over-confident in incorrect answers. Building on this insight, we propose DCPO, a simple yet effective framework that systematically decouples reasoning and calibration objectives. Extensive experiments demonstrate that our DCPO not only preserves accuracy on par with GRPO but also achieves the best calibration performance and substantially mitigates the over-confidence issue.
+
+Limitation: However, our theoretical analysis demonstrates that there exists a fundamental gradient conflict between the optimization for maximizing policy accuracy and minimizing calibration error.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2603.09117. Local PDF: papers/pdf/arxiv_2603.09117.pdf
+
+
+P0296. Process Reward Models That Think
+
+Authors: Muhammad Khalifa, Rishabh Agarwal, Lajanugen Logeswaran, Jaekyeom Kim, Hao Peng, Moontae Lee, et al.
+
+Year and venue: 2025, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: core
+
+Summary (from the abstract): Step-by-step verifiers -- also known as process reward models (PRMs) -- are a key ingredient for test-time scaling. We propose ThinkPRM, a long CoT verifier fine-tuned on orders of magnitude fewer process labels than those required by discriminative PRMs. Our approach capitalizes on the inherent reasoning abilities of long CoT models, and outperforms LLM-as-a-Judge and discriminative verifiers -- using only 1% of the process labels in PRM800K -- across several challenging benchmarks. In an out-of-domain evaluation on a subset of GPQA-Diamond and LiveCodeBench, our PRM surpasses discriminative verifiers trained on the full PRM800K by 8% and 4.5%, respectively. Lastly, under the same token budget, ThinkPRM scales up verification compute more effectively compared to LLM-as-a-Judge, outperforming it by 7.2% on a subset of ProcessBench.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2504.16828. Local PDF: papers/pdf/arxiv_2504.16828.pdf
+
+
+P0749. Reasoning Through Execution: Unifying Process and Outcome Rewards for Code Generation
+
+Authors: Zhuohao Yu, Weizheng Gu, Yidong Wang, Xingru Jiang, Zhengran Zeng, Jindong Wang, et al.
+
+Year and venue: 2024, arXiv
+
+Cluster: C7, Reinforcement learning, verifiers and reward models
+
+Priority: strong
+
+Summary (from the abstract): Large Language Models excel at code generation yet struggle with complex programming tasks that demand sophisticated reasoning. We introduce Outcome Refining Process Supervision, which unifies process and outcome supervision by leveraging executable verification: a tree-structured search framework generates strategic alternatives, profiles execution metrics, and scores candidates via self-critique mechanisms that integrate runtime feedback with reasoning. Experiments across 5 models and 3 benchmarks show consistent gains, with 26.9% higher correctness and 42.2% improved code efficiency. The results demonstrate that ORPS enables LLMs to overcome local optima in code generation, suggesting a promising direction for combining verifiable outcomes with structured reasoning to tackle complex challenges.
+
+Limitation: Large Language Models excel at code generation yet struggle with complex programming tasks that demand sophisticated reasoning.
+
+Why it matters: Connects verifier hardening to RLVR; motivates reward integrity and verifier reliability.
+
+Source: https://arxiv.org/abs/2412.15118. Local PDF: papers/pdf/arxiv_2412.15118.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.8 C8: Automated repair and patch correctness
+
+
+Patch overfitting is the oldest problem in this review. The survey by Fei et al. categorizes correctness-assessment methods and datasets (P0002). Petke et al. measure the practical magnitude and propose a random baseline for realistic benchmarking; their median number of plausible patches per Defects4J bug is two (P0008). The systematic literature review on LLM-based repair and the formal-methods studies add more evidence that tests alone do not select the correct patch (P0007, P0015).
+
+
+The cluster is useful because it separates two questions that are often conflated. One is whether a patch is plausible under the tests. The other is whether it is correct under the specification. AAVS's completeness gate is an attempt to answer the second question without a human oracle, and this cluster is the best source of counterarguments.
+
+
+Core papers
+
+
+P0002. Patch Correctness Assessment: A Survey
+
+Authors: Zhiwei Fei, Jidong Ge, Chuanyi Li, Tianqi Wang, Yuning Li, Haodong Zhang, et al.
+
+Year and venue: 2025, ACM Transactions on Software Engineering and Methodology
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Most automated program repair methods rely on test cases to determine the correctness of the generated patches. We then propose a comprehensive categorization of publicly available techniques and datasets, examine the commonly used evaluation metrics, and perform an in-depth analysis of the effectiveness of the existing models in addressing the challenge of overfitting. Based on our analysis, we provided the difficulties encountered by current methodologies, alongside the possible avenues for future research exploration.
+
+Limitation: However, due to the incompleteness of available test suites, some patches that pass all the test cases may still be incorrect.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1145/3702972
+
+
+P0004. Assessing the effectiveness of recent closed-source large language models in fault localization and automated program repair
+
+Authors: Bo Wang, Ming Deng, Mingda Chen, Youfang Lin, Jianyi Zhou, Jie M. Zhang
+
+Year and venue: 2025, Automated Software Engineering
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary: No abstract was available in the indexed metadata; the title and source are recorded for completeness.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1007/s10515-025-00549-x
+
+
+P0006. Hybrid Automated Program Repair by Combining Large Language Models and Program Analysis
+
+Authors: Fengjie Li, Jiajun Jiang, Jiajun Sun, Hongyu Zhang
+
+Year and venue: 2024, arXiv
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Automated Program Repair (APR) has garnered significant attention due to its potential to streamline the bug repair process for human developers. Our approach leverages the insight that LLM-generated patches, although not necessarily correct, offer valuable guidance for the patch generation process. To evaluate the performance of our approach, we conduct two large-scale experiments. However, existing APR methods often utilize patches generated by LLMs without further optimization, resulting in reduced effectiveness due to the lack of program-specific knowledge. The results demonstrate that G iant R epair not only effectively repairs more bugs (an average of 27.78% on Defects4J v1.2 and 23.40% on Defects4J v2.0) than using LLM-generated patches directly, but also outperforms state-of-the-art APR.
+
+Limitation: However, existing APR methods often utilize patches generated by LLMs without further optimization, resulting in reduced effectiveness due to the lack of program-specific knowledge.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://arxiv.org/abs/2406.00992 ; https://doi.org/10.1145/3715004. Local PDF: papers/pdf/arxiv_2406.00992.pdf
+
+
+P0007. A Systematic Literature Review on Large Language Models for Automated Program Repair
+
+Authors: Quanjun Zhang, Chunrong Fang, Yang Xie, YuXiang Ma, Weisong Sun, Yun Yang, et al.
+
+Year and venue: 2024, arXiv
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Automated Program Repair (APR) attempts to patch software bugs and reduce manual debugging efforts. Very recently, with the advances in Large Language Models (LLMs), a rapidly increasing number of APR techniques have been proposed, significantly facilitating software development and maintenance and demonstrating remarkable performance. However, due to ongoing explorations in the LLM-based APR field, it is challenging for researchers to understand the current achievements, challenges, and potential opportunities.
+
+Limitation: However, due to ongoing explorations in the LLM-based APR field, it is challenging for researchers to understand the current achievements, challenges, and potential opportunities.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://arxiv.org/abs/2405.01466 ; https://doi.org/10.1145/3799693. Local PDF: papers/pdf/arxiv_2405.01466.pdf
+
+
+P0008. The Patch Overfitting Problem in Automated Program Repair: Practical Magnitude and a Baseline for Realistic Benchmarking
+
+Authors: Justyna Petke, Matias Martinez, Maria Kechagia, Aldeida Aleti, Federica Sarro
+
+Year and venue: 2024, Companion Proceedings of the 32nd ACM International Conference on the Foundations of Software Engineering
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Automated program repair techniques aim to generate patches for software bugs, mainly relying on testing to check their validity. We observe that the number of plausible patches generated by any of the APR tools analysed for a given bug from the Defects4J dataset is remarkably low, a median of 2, indicating that a developer only needs to consider 2 patches in most cases to be confident to find a fix or confirming its nonexistence. We reflect on current evaluation strategies of automated patch assessment techniques and propose a Random.
+
+Limitation: We advocate future work should evaluate the benefit arising from patch overfitting assessment usage against the random baseline.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1145/3663529.3663776
+
+
+P0009. ContrastRepair: Enhancing Conversation-Based Automated Program Repair via Contrastive Test Case Pairs
+
+Authors: Jiaolong Kong, Mingfei Cheng, Xiaofei Xie, Shangqing Liu, Xiaoning Du, Qi Guo
+
+Year and venue: 2024, ACM Trans. Softw. Eng. Methodol., 34(8), Article 216, 2025
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Automated Program Repair (APR) aims to automatically generate patches for rectifying software bugs. In this paper, we propose ContrastRepair, a novel conversation-based APR approach that augments conversation-driven APR by providing LLMs with contrastive test pairs. We evaluate ContrastRepair on multiple benchmark datasets, including Defects4j, QuixBugs, and HumanEval-Java. The results demonstrate that ContrastRepair significantly outperforms existing methods, achieving a new state-of-the-art in program repair.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://arxiv.org/abs/2403.01971 ; https://doi.org/10.1145/3719345. Local PDF: papers/pdf/arxiv_2403.01971.pdf
+
+
+P0012. Context-Aware Code Change Embedding for Better Patch Correctness Assessment
+
+Authors: Bo Lin, Shangwen Wang, Ming Wen, Xiaoguang Mao
+
+Year and venue: 2022, ACM Transactions on Software Engineering and Methodology
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Despite the capability in successfully fixing more and more real-world bugs, existing Automated Program Repair (APR) techniques are still challenged by the long-standing overfitting problem (i.e., a generated patch that passes all tests is actually incorrect). Finally, based on several pre-defined heuristics, we build a deep learning based classifier to predict the correctness of the patch. Our results demonstrate that Cache can (1) perform better than previous representation learning based techniques (e.g., Cache relatively outperforms existing techniques by approximately 6%, approximately 3%, and approximately 16%, respectively under three diverse experiment settings), and (2) achieve overall higher performance than existing APCA techniques while even being more precise than certain dynamic ones.
+
+Key numbers: 83.0%)
+
+Limitation: However, existing techniques rarely considered the context information and program structures of a generated patch, which are crucial for patch correctness assessment as revealed by existing studies.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1145/3505247
+
+
+P0015. Exploring True Test Overfitting in Dynamic Automated Program Repair using Formal Methods
+
+Authors: Amirfarhad Nilizadeh, Gary T. Leavens, Xuan-Bach D. Le, Corina S. Pasareanu, David R. Cok
+
+Year and venue: 2021, 2021 14th IEEE Conference on Software Testing, Verification and Validation (ICST)
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Automated program repair (APR) techniques have shown a promising ability to generate patches that fix program bugs automatically. An additional contribution is that we introduce the first publicly available data set of formally specified and verified Java programs, their test suites, and buggy variants, each of which has exactly one bug. Using these formal specifications and an automated verification tool, we found that there is definitely overfitting in the generated patches of seven well-studied APR tools, although many (about 59%) of the generated patches were indeed correct.
+
+Limitation: However, neither of these methods for validating patches can truly tell whether a patch is correct.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1109/icst49551.2021.00033
+
+
+P0025. The Undecidability of Overfitting in Automated Program Repair
+
+Authors: Omar I. Al-Bataineh
+
+Year and venue: 2026, Proceedings of the IEEE/ACM 48th International Conference on Software Engineering
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Overfitting is one of the most persistent challenges in automated program repair (APR), typically attributed to weak or incomplete test suites. This perspective reframes overfitting not as a solvable bug in APR, but as an inherent boundary of the problem itself. We discuss the implications of this shift and call for a research agenda that works within these limits, developing methods to quantify, explain, and ultimately reason about overfitting as an unavoidable aspect of repair.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1145/3786582.3786802
+
+
+P0028. Towards Developing Effective Oracles to Reduce Patch Overfitting in Automated Program Repair
+
+Authors: Omar I. Al-Bataineh
+
+Year and venue: 2025, 2025 IEEE International Conference on Software Analysis, Evolution and Reengineering (SANER)
+
+Cluster: C8, Automated repair and patch correctness
+
+Priority: core
+
+Summary (from the abstract): Patch overfitting is a well-known open challenge for automated program repair (APR), which results from having insufficient or incomplete specifications to validate the generated patches. In the second part, we present a novel patch validation approach that extends the standard test-based validation strategy by verifying two additional oracles: (i) oracle Oeb, which is an assertion-based oracle, obtained from developer-written bug reports and used to check the absence of erroneous behavior associated with the analyzed bug, and (ii) oracle O_halt, which is a halting oracle used to check.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evidence on patch correctness and repair overfitting; motivates anti-shortcut and state-consistency checks.
+
+Source: https://doi.org/10.1109/saner64311.2025.00095
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.9 C9: Evaluation methodology and contamination
+
+
+This cluster is about the validity of the evaluation itself. The SWE-Bench Illusion shows that memorization can produce benchmark performance that does not transfer to unseen repositories (P0564). Benchmark Leakage and contamination-resistant benchmark design study how test data leaks into training and how to detect it (P1623, P1679). Automated Benchmark Auditing proposes a systematic audit pipeline (P1617), and the leaderboard profiling study examines who submits and what architectures are used (P0269).
+
+
+The practical lesson is that every score needs three things: a denominator, a contamination control, and a selection procedure. Papers in C1 and C5 often report one without the others. AAVS should not repeat that pattern.
+
+
+Core papers
+
+
+P0261. Benchmarks Are Not Monolithic: Sample-Level Auditing and Orchestration for LLM Evaluation
+
+Authors: Philipp D. Siedler, Jordan Sassoon
+
+Year and venue: 2026, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): Benchmark datasets are central to evaluating Large Language Models (LLMs), yet they are typically conceived as monolithic tasks, obscuring substantial variation in the demands of individual samples. We introduce a dataset-centric meta-evaluation framework that audits benchmark datasets at the sample level along five latent dimensions: 1. We show how these annotations enable criterion-driven orchestration of composite benchmark subsets across datasets, supporting targeted evaluation of model capabilities such as Reasoning Depth or Ethical Sensitivity.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2607.28801. Local PDF: papers/pdf/arxiv_2607.28801.pdf
+
+
+P0311. AdEval: Alignment-based Dynamic Evaluation to Mitigate Data Contamination in Large Language Models
+
+Authors: Yang Fan
+
+Year and venue: 2025, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): As Large Language Models (LLMs) are pre-trained on ultra-large-scale corpora, the problem of data contamination is becoming increasingly serious, and there is a risk that static evaluation benchmarks overestimate the performance of LLMs. To address this, this paper proposes a dynamic data evaluation method called AdEval (Alignment-based Dynamic Evaluation). AdEval first extracts knowledge points and main ideas from static datasets to achieve dynamic alignment with the core content of static benchmarks, and by avoiding direct reliance on static datasets, it inherently reduces the risk of data contamination from the source. Experimental results on multiple datasets show that AdEval effectively alleviates the impact of data contamination on evaluation results, solves.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2501.13983. Local PDF: papers/pdf/arxiv_2501.13983.pdf
+
+
+P0378. MEQA: A Meta-Evaluation Framework for Question & Answer LLM Benchmarks
+
+Authors: Jaime Raldua Veuthey, Zainab Ali Majid, Suhas Hariharan, Jacob Haimes
+
+Year and venue: 2025, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): As Large Language Models (LLMs) advance, their potential for widespread societal impact grows simultaneously. We propose MEQA, a framework for the meta-evaluation of question and answer (QA) benchmarks, to provide standardized assessments, quantifiable scores, and enable meaningful intra-benchmark comparisons. We demonstrate this approach on cybersecurity benchmarks, using human and LLM evaluators, highlighting the benchmarks' strengths and weaknesses.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2504.14039. Local PDF: papers/pdf/arxiv_2504.14039.pdf
+
+
+P0379. A Dual-Perspective NLG Meta-Evaluation Framework with Automatic Benchmark and Better Interpretability
+
+Authors: Xinyu Hu, Mingqi Gao, Li Lin, Zhenghan Yu, Xiaojun Wan
+
+Year and venue: 2025, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): In NLG meta-evaluation, evaluation metrics are typically assessed based on their consistency with humans. In this work, we propose a dual-perspective NLG meta-evaluation framework that focuses on different evaluation capabilities, thereby providing better interpretability. In addition, we introduce a method of automatically constructing the corresponding benchmarks without requiring new human annotations. Furthermore, we conduct experiments with 16 representative LLMs as the evaluators based on our proposed framework, comprehensively analyzing their evaluation performance from different perspectives.
+
+Limitation: However, we identify some limitations in traditional NLG meta-evaluation approaches, such as issues in handling human ratings and ambiguous selections of correlation measures, which undermine the effectiveness of meta-evaluation.
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2502.12052. Local PDF: papers/pdf/arxiv_2502.12052.pdf
+
+
+P0398. AntiLeakBench: Preventing Data Contamination by Automatically Constructing Benchmarks with Updated Real-World Knowledge
+
+Authors: Xiaobao Wu, Liangming Pan, Yuxi Xie, Ruiwen Zhou, Shuai Zhao, Yubo Ma, et al.
+
+Year and venue: 2024, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): Data contamination hinders fair LLM evaluation by introducing test data into newer models' training sets. To address these issues, we in this paper propose AntiLeak-Bench, an automated anti-leakage benchmarking framework. Instead of simply using newly collected data, we construct samples with explicitly new knowledge absent from LLMs' training sets, which thus ensures strictly contamination-free evaluation. This significantly reduces the cost of benchmark maintenance to accommodate emerging LLMs.
+
+Limitation: However, they fail to guarantee contamination-free evaluation as the newly collected data may contain pre-existing knowledge, and their benchmark updates rely on intensive human labor.
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2412.13670. Local PDF: papers/pdf/arxiv_2412.13670.pdf
+
+
+P0399. Benchmark Data Contamination of Large Language Models: A Survey
+
+Authors: Cheng Xu, Shuhao Guan, Derek Greene, M-Tahar Kechadi
+
+Year and venue: 2024, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): The rapid development of Large Language Models (LLMs) like GPT-4, Claude-3, and Gemini has transformed the field of natural language processing. This occurs when language models inadvertently incorporate evaluation benchmark information from their training data, leading to inaccurate or unreliable performance during the evaluation phase of the process. However, it has also resulted in a significant issue known as Benchmark Data Contamination (BDC).
+
+Limitation: However, it has also resulted in a significant issue known as Benchmark Data Contamination (BDC).
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2406.04244. Local PDF: papers/pdf/arxiv_2406.04244.pdf
+
+
+P0400. Generalization or Memorization: Data Contamination and Trustworthy Evaluation for Large Language Models
+
+Authors: Yihong Dong, Xue Jiang, Huanyu Liu, Zhi Jin, Bin Gu, Mengfei Yang, et al.
+
+Year and venue: 2024, arXiv
+
+Cluster: C9, Evaluation methodology and contamination
+
+Priority: core
+
+Summary (from the abstract): Recent statements about the impressive capabilities of large language models (LLMs) are usually supported by evaluating on open-access benchmarks. In this paper, we propose CDD, which stands for Contamination Detection via output Distribution for LLMs. To facilitate this study, we introduce two benchmarks, i.e., DetCon and ComiEval, for data contamination detection and contamination mitigation evaluation tasks. However, due to the opacity of training data, the black-box access of models, and the rapid growth of synthetic training data, detecting and mitigating data contamination for LLMs faces significant challenges. Extensive experimental results show that CDD achieves the average relative improvements of 21.8%-30.2% over other contamination detection approaches in terms of Accuracy, F1 Score, and AUC metrics, and can.
+
+Limitation: However, due to the opacity of training data, the black-box access of models, and the rapid growth of synthetic training data, detecting and mitigating data contamination for LLMs faces significant challenges.
+
+Why it matters: Evaluation-methodology support for benchmark validity, contamination analysis, and honest reporting.
+
+Source: https://arxiv.org/abs/2402.15938. Local PDF: papers/pdf/arxiv_2402.15938.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+7.10 C10: Sandbox, container and state integrity
+
+
+This is a cross-cutting cluster. Sandbox and state-integrity papers are usually assigned to coding agents (C5) or reward hacking (C3) by the lexical scorer, but they belong here conceptually. SideKernel studies a microVM sandbox for coding agents on macOS (P0187), SWE-MiniSandbox studies container-free reinforcement learning (P0197), and the Balkanization paper maps isolation, access control, and time-of-check-to-time-of-use risks (P0927).
+
+
+The defense literature is still fragmented. Fault-tolerant sandboxing proposes transactional execution (P1101), and container sandbox escape work measures how capable frontier models are at breaking isolation (P1619). No paper in the corpus provides a unified protocol that connects AST-level mutants, filesystem state, process state, and exit codes. That is the Stage 2 gap.
+
+
+Core papers
+
+
+P0187. SideKernel: A Usable microVM Sandbox for AI Coding Agents on macOS
+
+Authors: Dimitrios Prasakis
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): AI coding agents are untrusted system components, yet they require autonomy on the developer machines they run on. I conducted a formative online user survey which indicates that fewer than 40% of AI coding agent users run their agents in a sandbox and identifies the top usability barriers hindering AI coding agent sandbox adoption.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2610.02456. Local PDF: papers/pdf/arxiv_2610.02456.pdf
+
+
+P0197. SWE-MiniSandbox: Container-Free Reinforcement Learning for Building Software Engineering Agents
+
+Authors: Danlong Yuan, Wei Wu, Enhan Zhao, Zhengren Wang, Xueliang Zhao, Huishuai Zhang, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: core
+
+Summary (from the abstract): Reinforcement learning (RL) has become a key paradigm for training software engineering (SWE) agents, but existing pipelines typically rely on per-task containers for isolation. We propose SWE-MiniSandbox, a lightweight, container-free method that enables scalable RL training of SWE agents without sacrificing isolation. As a result, our approach lowers disk usage to approximately 5% of that required by container-based pipelines and reduces environment preparation time to about 25% of the container baseline. Instead of relying on per-instance containers, SWE-MiniSandbox executes each task in an isolated workspace backed by kernel-level mechanisms, substantially reducing system overhead. Empirical results demonstrate that SWE-MiniSandbox achieves evaluation performance comparable to standard container-based pipelines.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2602.11210. Local PDF: papers/pdf/arxiv_2602.11210.pdf
+
+
+P0927. The Balkanization of Execution-Security Research for AI Coding Agents: Isolation, Access Control, and Time-of-Check-to-Time-of-Use Vulnerabilities
+
+Authors: Mohammadreza Rashidi
+
+Year and venue: 2026, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: strong
+
+Summary (from the abstract): AI coding agents now read repositories, call tools, and execute shell commands with limited human oversight, and a fast-growing body of work studies whether the execution layer around them is actually safe. Papers on sandbox isolation, capability and access control, policy enforcement, time-of-check-to-time-of-use (TOCTOU) races, Model Context Protocol (MCP) threats, identity delegation, execution provenance, network egress control, and static analysis of agent-generated code are published independently and rarely cite one another. (2) Policy-enforcement studies report failure rates from 69% to 98% of real denylists, yet no isolation paper re-evaluates its own defense under that adversarial setting. (5) Benign but out-of-scope agent actions occurring at rates up to 17.1% under realistic prompting are addressed by no access-control or capability paper in the corpus.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2607.05743. Local PDF: papers/pdf/arxiv_2607.05743.pdf
+
+
+P1101. Fault-Tolerant Sandboxing for AI Coding Agents: A Transactional Approach to Safe Autonomous Execution
+
+Authors: Boyang Yan
+
+Year and venue: 2025, arXiv
+
+Cluster: C5, Coding agents and repository benchmarks
+
+Priority: strong
+
+Summary (from the abstract): The transition of Large Language Models (LLMs) from passive code generators to autonomous agents introduces significant safety risks, specifically regarding destructive commands and inconsistent system states. This paper presents a Fault-Tolerant Sandboxing framework designed to mitigate these risks through a policy-based interception layer and a transactional filesystem snapshot mechanism. We hypothesize that wrapping agent actions in atomic transactions can guarantee safety with acceptable latency, outperforming the heavy initialization overhead of containers or the interactive friction of commercial CLIs. Experimental results demonstrate a 100% interception rate for high-risk commands and a 100% success rate in rolling back failed states.
+
+Limitation: Not stated in the abstract.
+
+Why it matters: Benchmark and agent context; supplies the evaluation substrate and public predictions for zero-cost FPFR analysis.
+
+Source: https://arxiv.org/abs/2512.12806. Local PDF: papers/pdf/arxiv_2512.12806.pdf
+
+
+P1619. Quantifying Frontier LLM Capabilities for Container Sandbox Escape
+
+Authors: Rahul Marchand, Art O Cathain, Jerome Wynne, Philippos Maximos Giavridis, Stuart Jennings, Freddy Tuxworth, et al.
+
+Year and venue: 2026, arXiv
+
+Cluster: C10, Sandbox, container and state integrity
+
+Priority: contextual
+
+Summary (from the abstract): Large language models (LLMs) increasingly act as autonomous agents, using tools to execute code, read and write files, and access networks, creating novel security risks. We introduce SANDBOXESCAPEBENCH, an open benchmark that safely measures an LLM's capacity to break out of these sandboxes. We find that, when vulnerabilities are added, LLMs are able to identify and exploit them, showing that use of evaluation like SANDBOXESCAPEBENCH is needed to ensure sandboxing continues to provide the encapsulation needed for highly-capable models.
+
+Limitation: AI Security Institute. Frontier ai trends report, December 2025a. URL https://www.aisi.gov.uk/fron tier-ai-trends-report. S ANDBOX E SCAPE B ENCH focuses on container/pod-tohost escapes under a motivated-adversary threat model with intentionally introduced weaknesses, shell access and minimal monitoring; results should not be interpreted as endto-end compromise likelihood in defended production environments.
+
+Why it matters: Defense mechanisms for container/state integrity; informs Stage 2/3 sandbox hardening.
+
+Source: https://arxiv.org/abs/2603.02277. Local PDF: papers/pdf/arxiv_2603.02277.pdf
+
+
+What is missing. The cluster still lacks a shared protocol that reports the denominator, the false-pass rate, and the false-rejection rate on valid patches. Most papers report one or two of these, not all three.
+
+
+8. EVIDENCE TABLE
+
+
+1. Claim: 77% of SWE-bench Verified instances admit at least one surviving variant.
+
+Source: P0120, Probe to Generate.
+
+Denominator: 500 Verified instances; 211 augmented; 1,014 tests.
+
+
+2. Claim: 345 erroneous patches were previously marked passed.
+
+Source: P0001, UTBoost.
+
+Denominator: 36 insufficient-test instances; 40.9% Lite and 24.4% Verified leaderboard entries; 18 and 11 ranking changes.
+
+
+3. Claim: 50.2% of 500 Verified instances were strengthened and 19.71% of passing patches rejected.
+
+Source: P0837, SWE-ABS.
+
+Denominator: Top score 78.80% to 62.20%; previous top agent falls to fifth.
+
+
+4. Claim: 480 of 731 SWE-Bench Pro tasks were repaired or retired.
+
+Source: P0034, SWE-Bench Pro V2.
+
+Denominator: 642 tasks in the V2 split; hardened protocol blocks upstream-fix retrieval.
+
+
+5. Claim: 76% file-path accuracy on SWE-bench repositories versus 53% outside the benchmark.
+
+Source: P0564, The SWE-Bench Illusion.
+
+Denominator: Diagnostic probes using issue text alone.
+
+
+6. Claim: Less than half of LLM-dependent harness lines and branches are covered.
+
+Source: P0841, Complex Agents, Shallow Tests.
+
+Denominator: HarnessTester reports 75.95%/84.76% larger coverage gains and 122 real harness bugs.
+
+
+7. Claim: 331 environments, 3,632 hack trajectories, 2,352 legitimate baselines.
+
+Source: P0121, Terminal Wrench.
+
+Denominator: Three frontier models; detection AUC 0.97 to 0.92 without chain-of-thought.
+
+
+8. Claim: 2,294 issues across 12 Python repositories.
+
+Source: P0434, SWE-bench.
+
+Denominator: The original benchmark and harness.
+
+
+9. Claim: 1,632 instances across seven languages.
+
+Source: P0013, Multi-SWE-bench.
+
+Denominator: 68 annotators; 4,723 RL instances released.
+
+
+10. Claim: 1,319 tasks across 93 repositories.
+
+Source: P0262, SWE-bench Live.
+
+Denominator: Tasks derived from GitHub issues created since 2024.
+
+
+11. Claim: Equivalent mutants inflate the denominator and must be reported.
+
+Source: P0239; P0032.
+
+Denominator: 3,302 Java and 1,088 C mutant pairs; symbolic execution correctly classified 13 equivalent and 239 non-equivalent mutants in P0032.
+
+
+9. CITATION CORRECTIONS
+
+
+The repository's earlier literature notes contained four paper titles and several numbers that did not match the live records. The papers are real, but the descriptions had drifted. The corrections are listed here so the review does not repeat them.
+
+
+arXiv:2604.01518. The document title was 'Are Benchmark Tests Strong Enough? Investigating Test Inadequacy in SWE-bench'. The live title is 'Probe to Generate: Program Variant-Guided Test Augmentation for Repository-Level Repair Benchmarks'. The paper reports 77% of Verified instances with a surviving variant, 1,014 tests across 211 instances, and a 4.2% to 9.0% resolved-rate drop.
+
+
+arXiv:2506.09289. The document title was 'UTBoost: Augmenting Unit Tests for AI Coding Benchmarks via Intramorphic Oracle Filtering'. The live title is 'UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench'. The abstract reports 36 insufficient-test instances and 345 erroneous patches, not an 18.2% false-pass reduction or a 34% overfit rate.
+
+
+arXiv:2604.17596. The document title was 'Terminal Wrench: Exposing Reward Hacking and Environmental Blind Spots in OS Agents'. The live title is 'Terminal Wrench: A Dataset of 331 Reward-Hackable Environments and 3,632 Exploit Trajectories'. The abstract does not report 42 cheating patterns or 150 tasks.
+
+
+arXiv:2608.22103. The document title was 'Hack-Verifiable Terminal Bench: Defending Against State Spoofing in System Agents'. The live title is 'Hack-Verifiable Terminal Bench: Evaluating Reward Hacking in Terminal Tasks'. The abstract measures reward hacking and tests prompt mitigations; it does not claim a checksum-tree or read-only-volume defense.
+
+
+Numeric claims that must be rewritten or removed.
+
+
+1. Original claim: 24.4% to 77.1% of benchmark test suites are inadequate.
+
+Correction: This merges two different units. Probe to Generate reports 77% of SWE-bench Verified instances with at least one surviving variant. UTBoost reports corrections affecting 24.4% of Verified leaderboard entries. The two numbers should be cited separately.
+
+
+2. Original claim: UTBoost found an 18.2% reduction in false passes.
+
+Correction: The abstract does not contain that figure. It reports 345 erroneous patches, 40.9% and 24.4% affected leaderboard entries, and 18 and 11 ranking changes.
+
+
+3. Original claim: Over 34% of LLM-generated tests overfit to implementation details.
+
+Correction: The abstract does not contain that figure. It may be in the full text, but it is not attributed to a table or section in the current notes.
+
+
+4. Original claim: Terminal Wrench found 42 patterns across 150 tasks.
+
+Correction: The abstract reports 331 environments, 3,632 hack trajectories, and 2,352 legitimate baselines. The 42-pattern and 150-task figures are not in the abstract.
+
+
+5. Original claim: Hack-Verifiable Terminal Bench replaces stdout regexes with checksum trees and read-only volumes.
+
+Correction: The abstract describes adapting HVE to Terminal Bench to measure reward hacking and test prompt mitigations. The defense framing is not supported by the abstract.
+
+
+6. Original claim: Up to 77% of benchmark unit tests have coverage deficits.
+
+Correction: The 77% refers to instances with at least one surviving variant, not individual unit tests.
+
+
+10. LIMITATIONS OF THIS REVIEW
+
+
+The relevance scoring is lexical. A paper can score highly because its title and abstract use the right vocabulary, even if its method is weak. The tiers are prioritization labels, not peer review.
+
+Most summaries compress an abstract. They are useful for orientation, not for quoting a specific number. The source link and the local PDF are provided for checking.
+
+The corpus is not a registered systematic review. It over-represents open-access arXiv and Crossref work. Paywalled venue papers are present as metadata but may lack full text.
+
+The 117 metadata-only records have no abstract in the indexed sources. They remain in the appendix for completeness, but they are not evidence for any claim.
+
+The field moves quickly. 578 of the 1,500 records are dated 2026. The corpus should be refreshed before the manuscript is submitted.
+
+
+11. HOW TO CHECK THE WORK
+
+
+Every paper in the detailed review has a stable ID, a cluster, a priority, a summary, and a source link. The appendix lists all 1,500 records in the same format. A reader can pick any row, open the source, and compare it with the card.
+
+The pipeline is reproducible. The commands are: python scripts/literature_harvester.py harvest --target 1500; download --limit 1500; extract; python scripts/enrich_abstracts.py; python scripts/literature_report.py; python scripts/literature_fulltext_index.py; python scripts/build_compendium.py. Query responses are cached, so a re-run only fetches new queries.
+
+The complete per-paper compendium, the searchable HTML explorer, the evidence matrix, and the full-text signal index are in the docs directory of the repository. The PDFs are in papers/pdf. The metadata is in papers/metadata.
+

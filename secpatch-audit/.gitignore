@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts
+.runs/
+reports/
+*.sarif
+*.jsonl
+*.duckdb
+*.sqlite
+*.log
+
+# Task checkouts and corpora
+corpus/tasks/
+corpus/cache/
+data/
+
+# Editors
+.idea/
+.vscode/
+.DS_Store

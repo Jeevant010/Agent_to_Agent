@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(.venv/bin/python - <<'PY' import json,re from pathlib import Path cards=[json.loads(l) for l in Path('papers/metadata/papers_research_cards.jsonl').read_text().splitlines() if l.strip()] by={c['corpus_id']:c for c in cards} ids=[\"P0120\",\"P0001\",\"P0837\",\"P0034\",\"P0564\",\"P0841\",\"P0262\",\"P0013\",\"P0434\",\"P0002\",\"P0121\",\"P0058\",\"P0071\",\"P0011\",\"P0019\",\"P0005\",\"P0191\",\"P0192\",\"P1194\",\"P0847\",\"P1154\",\"P1155\",\"P0516\",\"P0546\",\"P1124\",\"P1015\",\"P0032\",\"P0116\",\"P0052\",\"P1292\",\"P0870\",\"P0239\",\"P1617\",\"P0553\",\"P0554\",\"P0555\"] for i in ids: c=by.get(i) tp=c.get('text_path') if c else None if not tp or not Path(tp).exists(): print(f\"\\n### {i}: NO TEXT\"); continue t=Path(tp).read_text(errors='ignore') t=re.sub(r'\\s+',' ',t) hits=[] for m in re.finditer(r'(?i)(future work|future research|future direction|we leave|remains? (?:an )?open|limitation)',t): s=max(0,m.start()-180); e=min(len(t),m.start()+320) frag=t[s:e] if len(frag)>60: hits.append(frag) seen=set(); out=[] for h in hits: k=h[:80] if k in seen: continue seen.add(k); out.append(h) if len(out)>=2: break print(f\"\\n### {i} — {c['title'][:80]}\") for o in out: print(\" ...\", o.replace('\\n',' ')[:500]) PY)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

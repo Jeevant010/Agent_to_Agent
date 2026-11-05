@@ -2,8 +2,14 @@
 """
 scripts/sandbox.py
 
-Isolated subprocess execution sandbox for running pytest suites against
-target code in clean, temporary directories.
+Subprocess execution sandbox for running pytest suites against target code in
+clean, temporary directories.
+
+This is a *process* sandbox, not a security boundary: generated tests still run
+with the current user's permissions. Do not execute untrusted code here without
+an OS/container-level isolation layer. For the research pipeline, treat this as
+a reproducibility and accidental-damage control, not as protection against a
+malicious agent.
 """
 
 import sys
@@ -23,8 +29,9 @@ def execute_in_sandbox(code_content: str, test_content: str, timeout_sec: int = 
         target_file = tmp_path / "target.py"
         test_file = tmp_path / "test_synthesized.py"
 
-        # Explicitly ensure target module is on sys.path for test execution
-        import_wrapper = f"import sys\nsys.path.insert(0, r'{tmpdir}')\n\n" + test_content
+        # Explicitly ensure target module is on sys.path for test execution.
+        # repr() handles quotes/backslashes in the temporary path safely.
+        import_wrapper = f"import sys\nsys.path.insert(0, {str(tmpdir)!r})\n\n" + test_content
 
         target_file.write_text(code_content, encoding="utf-8")
         test_file.write_text(import_wrapper, encoding="utf-8")
