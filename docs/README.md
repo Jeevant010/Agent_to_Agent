@@ -1,18 +1,25 @@
 # Documentation Index
 
-This directory contains six documents. Everything else is generated output and is stored in
+This directory contains seven documents. Everything else is generated output and is stored in
 `archive/`; it is retained for traceability but is not required reading.
 
 ## Documents
 
 | Document | Contents |
 | :--- | :--- |
+| [`PROGRAM_PLAN.md`](PROGRAM_PLAN.md) | The two-paper program: goal, corpus strategy, tooling, artifacts to build, protocol and metrics, novelty, and a twelve-week work plan. |
 | [`STATE_OF_THE_FIELD.md`](STATE_OF_THE_FIELD.md) | The closest prior work, the point at which each line stops, documented failure modes, and the claims this project can defend. |
 | [`PAPER_COMPARISON.md`](PAPER_COMPARISON.md) | A 37-paper comparison table: authors, year, tools, about, domain, pros, cons, and future work, followed by a capability matrix. |
 | [`NEXT_STEPS.md`](NEXT_STEPS.md) | The execution order derived from the review: substrate, attacker calibration, two-sided measurement, defender synthesis, container case, release. Includes acceptance and kill criteria. |
 | [`RESEARCH_PLAN.md`](RESEARCH_PLAN.md) | Formal definitions, metrics (`SMR`, `VHR`, `FPFR`), the three-stage roadmap, and target venues. |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | The codebase guide: what each script does and how the pipeline runs. |
 | [`AAVS_Literature_Review_Main.docx`](AAVS_Literature_Review_Main.docx) | The submission-ready literature review, including the field-status section and the comparison tables. A plain-text mirror is in `AAVS_Literature_Review_Main.txt`. |
+
+## Paper 1 workspace
+
+The security-only paper materials are in [`../secpatch-audit/`](../secpatch-audit/README.md).
+That directory is staged as the root of a separate repository and contains the goal, corpus,
+tooling, protocol, work split, explainer, novelty assessment, and paper outline for Paper 1.
 
 ## Summary
 
