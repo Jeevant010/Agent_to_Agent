@@ -138,8 +138,10 @@ pipeline and are retained only for reproducibility.
 
 ### Documentation (`docs/` & `deep-docs/`)
 
-The five files that matter are indexed in [`docs/README.md`](../docs/README.md).
+The main documents are indexed in [`docs/README.md`](../docs/README.md).
 
+- [`docs/PROGRAM_PLAN.md`](../docs/PROGRAM_PLAN.md)  
+  The two-paper program: corpus strategy, tooling, protocol, novelty, and work plan.
 - [`docs/STATE_OF_THE_FIELD.md`](../docs/STATE_OF_THE_FIELD.md)  
   Has anyone already built this? Closest prior work, what failed, and what is actually new.
 - [`docs/PAPER_COMPARISON.md`](../docs/PAPER_COMPARISON.md)  
